@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AR Smartsheet Automation (Local HTML Runner)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css">
+<!-- Inject generated config BEFORE PyScript so Python can access via js.window.AR_CFG -->
+<script src="config.js"></script>
+<script defer src="https://pyscript.net/latest/pyscript.js"></script>
+<style>
+ body{font-family:Arial,Helvetica,sans-serif;margin:16px;background:#f5f7fa;color:#222;}
+ h1{font-size:20px;margin:4px 0 12px;}
+ fieldset{border:1px solid #ccc;padding:12px;margin-bottom:14px;background:#fff;border-radius:6px;}
+ legend{font-weight:bold;padding:0 6px;}
+ label{display:block;margin-top:6px;font-size:12px;font-weight:600;letter-spacing:.5px;color:#444;}
+ input[type=text],input[type=number]{width:100%;padding:6px 8px;margin-top:2px;box-sizing:border-box;}
+ button{cursor:pointer;padding:6px 12px;margin:4px 6px 4px 0;border:1px solid #1976d2;background:#2196f3;color:#fff;border-radius:4px;font-size:13px;}
+ button.secondary{background:#607d8b;border-color:#546e7a;}
+ button.danger{background:#e53935;border-color:#c62828;}
+ button:disabled{opacity:.45;cursor:not-allowed;}
+ details{margin-bottom:10px;}
+ summary{font-weight:600;cursor:pointer;}
+ .row{display:flex;flex-wrap:wrap;gap:12px;}
+ .col{flex:1 1 260px;min-width:240px;}
+ .log{background:#111;color:#e0e0e0;padding:8px;font-family:Consolas,monospace;height:200px;overflow:auto;font-size:12px;border-radius:4px;}
+ .ok{color:#4caf50;}
+ .warn{color:#ffb300;}
+ .err{color:#ff5252;}
+ .pill{display:inline-block;background:#e0f2f1;color:#00695c;padding:2px 6px;border-radius:10px;font-size:11px;margin:0 4px 4px 0;}
+ .flex{display:flex;align-items:center;gap:8px;}
+ .small{font-size:11px;opacity:.85;}
+ .badge{background:#1976d2;color:#fff;border-radius:3px;padding:2px 4px;font-size:10px;margin-left:6px;}
+ textarea{width:100%;min-height:120px;font-family:Consolas,monospace;font-size:12px;padding:6px;box-sizing:border-box;}
+ .note{background:#fff8e1;border:1px solid #ffe082;padding:8px;border-radius:4px;font-size:12px;margin-top:6px;}
+ .dangerZone{background:#ffebee;border:1px solid #ffcdd2;}
+ .success{background:#e8f5e9;border:1px solid #c8e6c9;}
+ a.dl{display:inline-block;background:#37474f;color:#fff;text-decoration:none;padding:4px 8px;border-radius:4px;font-size:11px;margin:2px 4px 2px 0;}
+</style>
+</head>
+<body>
+<h1>AR Smartsheet Automation – Step Runner (HTML)</h1>
+<p class="small">
+Local helper UI for colleagues without programming background. No server install needed.
+<br>Smartsheet + Code generation steps can run here. ArcGIS / arcpy steps must be executed in ArcGIS Pro (not possible inside browser).
+<br><b>Important:</b> This page calls Smartsheet REST API directly. If your browser blocks CORS or your organization restricts it, calls may fail.
+</p>
+
+<fieldset>
+<legend>1. Configuration (Read-Only)</legend>
+<div class="note">
+Values are injected from <code>.env</code> via <code>build_config.py</code>. To change token or sheet IDs, edit <code>.env</code> and re-run the build script. No credentials are typed into the browser.
+</div>
+<div class="row">
+    <div class="col small"><b>Token:</b> <span id="cfgTokenMask">(hidden)</span></div>
+    <div class="col small"><b>SHEET C1:</b> <span id="cfgC1"></span></div>
+    <div class="col small"><b>SHEET C2:</b> <span id="cfgC2"></span></div>
+    <div class="col small"><b>SHEET C3:</b> <span id="cfgC3"></span></div>
+</div>
+<div class="row">
+    <div class="col">
+        <label>Active Component</label>
+        <select id="component">
+            <option value="C1">C1</option>
+            <option value="C2">C2</option>
+            <option value="C3">C3</option>
+        </select>
+    </div>
+    <div class="col">
+        <label>Row Range (Start)</label>
+        <input type="number" id="rowStart" value="1" min="1">
+    </div>
+    <div class="col">
+        <label>Row Range (End, inclusive)</label>
+        <input type="number" id="rowEnd" value="50" min="1">
+    </div>
+</div>
+</fieldset>
+
+<fieldset>
+<legend>2. Sheet Operations</legend>
+<div>
+  <button id="btnLoadSheet">Load Sheet (Preview)</button>
+  <button id="btnGenerateCodes">Generate + Update Missing Codes</button>
+  <button id="btnUpdateReview">Update Review Status</button>
+  <button id="btnListAttachments">List Attachments (Links)</button>
+</div>
+<div class="note success">
+Order suggestion: Load Sheet → Generate Codes → Update Review Status → List Attachments.
+</div>
+</fieldset>
+
+<fieldset>
+<legend>3. ArcGIS / Shapefile Steps (Manual)</legend>
+<p class="small">
+arcpy and ArcGIS Pro automation cannot run in browser. Use the script below inside your ArcGIS Pro Python environment after downloading shapefile ZIPs.
+</p>
+<button id="btnCopyArcPy" class="secondary">Copy ArcPy Helper Script</button>
+<textarea id="arcPyScript" readonly>
+# ArcGIS Pro Helper (paste into ArcGIS Pro Python window)
+import arcpy, os, zipfile, shutil, re
+ZIP_FOLDER = r"C:\Path\To\Downloaded\ShapeZips"
+GDB = r"C:\Path\To\Your.gdb"
+MAP_NAME = "AR_2023"
+aprx = arcpy.mp.ArcGISProject("CURRENT")
+m = aprx.listMaps(MAP_NAME)[0]
+def sanitize(n): return re.sub(r'[^A-Za-z0-9_\-]','_', n)
+for f in os.listdir(ZIP_FOLDER):
+    if f.lower().endswith(".zip"):
+        base = os.path.splitext(f)[0]
+        out_dir = os.path.join(ZIP_FOLDER, base)
+        if not os.path.exists(out_dir): os.makedirs(out_dir)
+        with zipfile.ZipFile(os.path.join(ZIP_FOLDER,f),"r") as z:
+            z.extractall(out_dir)
+        for root,_,files in os.walk(out_dir):
+            for shp in files:
+                if shp.lower().endswith(".shp"):
+                    full = os.path.join(root, shp)
+                    nm = sanitize(os.path.splitext(shp)[0])
+                    m.addDataFromPath(full)
+print("Done - added shapefiles.")
+</textarea>
+</fieldset>
+
+<fieldset class="dangerZone">
+<legend>4. Logs</legend>
+<div id="log" class="log"></div>
+<button id="btnClearLog" class="secondary">Clear Log</button>
+</fieldset>
+
+<fieldset>
+<legend>5. Attachments (Result Table)</legend>
+<div id="attachmentsArea" class="small">No data yet.</div>
+</fieldset>
+
+<py-script>
+import js, json, math, asyncio, textwrap
+from datetime import datetime
+
+# Access injected config
+CFG = js.window.AR_CFG
+TOKEN = CFG.SMARTSHEET_TOKEN or ""
+SHEET_C1 = CFG.SHEET_C1 or ""
+SHEET_C2 = CFG.SHEET_C2 or ""
+SHEET_C3 = CFG.SHEET_C3 or ""
+DEF_COMP = CFG.DEFAULT_COMPONENT or "C1"
+def _init_dom():
+    # populate read-only spans and selectors
+    js.document.getElementById("cfgC1").textContent = SHEET_C1
+    js.document.getElementById("cfgC2").textContent = SHEET_C2
+    js.document.getElementById("cfgC3").textContent = SHEET_C3
+    comp_sel = js.document.getElementById("component")
+    # set default component if present in options
+    for i in range(comp_sel.options.length):
+        if comp_sel.options[i].value == DEF_COMP:
+            comp_sel.selectedIndex = i
+            break
+    # row start/end
+    rs = str(CFG.ROW_START or "1")
+    re_ = str(CFG.ROW_END or "50")
+    js.document.getElementById("rowStart").value = rs
+    js.document.getElementById("rowEnd").value = re_
+_init_dom()
+
+log_el = js.document.getElementById("log")
+attach_el = js.document.getElementById("attachmentsArea")
+
+REVIEW_SET = {"Rojo","Amarillo","Verde","Sí","Espera","No"}
+
+def ui_val(id_):
+    return js.document.getElementById(id_).value.strip()
+
+def log(msg, cls=""):
+    span = js.document.createElement("div")
+    if cls: span.className = cls
+    now = datetime.now().strftime("%H:%M:%S")
+    span.innerHTML = f"[{now}] {msg}"
+    log_el.appendChild(span)
+    log_el.scrollTop = log_el.scrollHeight
+
+def get_active_sheet_id():
+    comp = ui_val("component")
+    if comp == "C1": return SHEET_C1
+    if comp == "C2": return SHEET_C2
+    if comp == "C3": return SHEET_C3
+    return ""
+
+async def api_get(path):
+    token = TOKEN
+    if not token:
+        log("No token injected (check .env)", "err"); return None
+    headers = js.Headers.new()
+    headers.append("Authorization", f"Bearer {token}")
+    headers.append("Accept","application/json")
+    r = await js.fetch(f"https://api.smartsheet.com/2.0{path}", { "headers": headers })
+    if not r.ok:
+        log(f"GET {path} failed {r.status}", "err")
+        return None
+    return await r.json()
+
+async def api_put(path, body):
+    token = TOKEN
+    headers = js.Headers.new()
+    headers.append("Authorization", f"Bearer {token}")
+    headers.append("Accept","application/json")
+    headers.append("Content-Type","application/json")
+    r = await js.fetch(f"https://api.smartsheet.com/2.0{path}", {
+        "method":"PUT",
+        "headers": headers,
+        "body": js.JSON.stringify(body)
+    })
+    if not r.ok:
+        txt = await r.text()
+        log(f"PUT {path} failed {r.status}: {txt[:200]}", "err")
+        return None
+    return await r.json()
+
+def build_column_map(sheet_json):
+    cmap = {}
+    for c in sheet_json.get("columns", []):
+        cmap[c["title"]] = c["id"]
+    return cmap
+
+def extract_cell(row, col_id):
+    for c in row.get("cells", []):
+        if c.get("columnId")==col_id:
+            return c.get("value")
+    return None
+
+def gen_code(fecha_str, compo, who, existing):
+    if not fecha_str or not who:
+        return None
+    # fecha like 2024-06-21 -> remove dashes then drop first 2 chars
+    base_date = fecha_str.replace("-","")
+    base = f"{base_date[2:]}_{compo}_{who}_"
+    letters = "abcdefghijklmnopqrstuvwxyz"
+    for length in range(1,5):
+        def rec(prefix, depth):
+            if depth==0:
+                candidate = base+prefix
+                if candidate not in existing:
+                    existing.add(candidate)
+                    return candidate
+                return None
+            for ch in letters:
+                out = rec(prefix+ch, depth-1)
+                if out: return out
+            return None
+        got = rec("", length)
+        if got: return got
+    return None
+
+async def load_sheet_preview(*args):
+    sheet_id = get_active_sheet_id()
+    if not sheet_id:
+        log("No sheet ID", "err"); return
+    rng_start = int(ui_val("rowStart") or "1")
+    rng_end = int(ui_val("rowEnd") or "1")
+    log(f"Loading sheet {sheet_id} rows {rng_start}-{rng_end} ...")
+    data = await api_get(f"/sheets/{sheet_id}?include=attachments")
+    if not data: return
+    js.window._activeSheet = data
+    log(f"Sheet name: {data.get('name')} total rows: {len(data.get('rows',[]))}", "ok")
+    # Simple preview
+    colmap = build_column_map(data)
+    fecha_id = colmap.get("FECHA DE LA ACTIVIDAD")
+    code_id = colmap.get("CÓDIGO DE LA ACTIVIDAD")
+    preview = 0
+    for r in data.get("rows",[]):
+        rn = r.get("rowNumber")
+        if rn < rng_start or rn > rng_end: continue
+        fecha = extract_cell(r, fecha_id)
+        code = extract_cell(r, code_id)
+        log(f"Row {rn}: FECHA={fecha} CODIGO={code}")
+        preview+=1
+        if preview>=10:
+            log("Preview limited to 10 rows ...")
+            break
+
+async def generate_codes(*args):
+    sheet = getattr(js.window, "_activeSheet", None)
+    if sheet is None:
+        log("Load sheet first", "warn"); return
+    comp = ui_val("component")
+    sheet_id = get_active_sheet_id()
+    rng_start = int(ui_val("rowStart") or "1")
+    rng_end = int(ui_val("rowEnd") or "1")
+    colmap = build_column_map(sheet)
+    needed = ["FECHA DE LA ACTIVIDAD","CÓDIGO DE LA ACTIVIDAD","CALIDAD DE DATOS"]
+    if comp!="C3":
+        needed.append("Calidad SIG")
+    if comp=="C2":
+        needed.append("ORGANIZACIÓN")
+    else:
+        needed.append("NOMBRE DE QUIEN REPORTA")
+    for n in needed:
+        if n not in colmap:
+            log(f"Missing column: {n}", "err"); return
+    fecha_id = colmap["FECHA DE LA ACTIVIDAD"]
+    code_id = colmap["CÓDIGO DE LA ACTIVIDAD"]
+    cal_dato_id = colmap["CALIDAD DE DATOS"]
+    cal_sig_id = colmap.get("Calidad SIG")
+    org_id = colmap.get("ORGANIZACIÓN")
+    quien_id = colmap.get("NOMBRE DE QUIEN REPORTA")
+    existing = set()
+    # gather existing
+    for r in sheet["rows"]:
+        val = extract_cell(r, code_id)
+        if val: existing.add(val)
+    updates = []
+    processed = 0
+    for r in sheet["rows"]:
+        rn = r["rowNumber"]
+        if rn < rng_start or rn > rng_end: continue
+        cal_dato = extract_cell(r, cal_dato_id)
+        cal_sig = extract_cell(r, cal_sig_id) if cal_sig_id else None
+        if cal_dato in REVIEW_SET or (cal_sig in REVIEW_SET if cal_sig is not None else False):
+            continue
+        fecha = extract_cell(r, fecha_id)
+        if not fecha:
+            continue
+        if comp=="C2":
+            who = extract_cell(r, org_id)
+        else:
+            who_full = extract_cell(r, quien_id)
+            who = (who_full or "")[:3]
+        if not who:
+            continue
+        code_new = gen_code(fecha, comp, who, existing)
+        if not code_new:
+            log(f"Row {rn} failed to generate code", "warn")
+            continue
+        updates.append({
+            "id": r["id"],
+            "cells":[{"columnId": code_id, "value": code_new}]
+        })
+        processed += 1
+        if len(updates) >= 50:
+            body = {"cells":[], "rows": updates}
+            await api_put(f"/sheets/{sheet_id}/rows", updates)
+            updates.clear()
+    if updates:
+        await api_put(f"/sheets/{sheet_id}/rows", updates)
+    log(f"Generated codes for {processed} rows", "ok")
+
+async def update_review_status(*args):
+    sheet = getattr(js.window, "_activeSheet", None)
+    if sheet is None:
+        log("Load sheet first", "warn"); return
+    comp = ui_val("component")
+    if comp=="C3":
+        log("C3 has no Calidad SIG – skipping", "warn"); return
+    sheet_id = get_active_sheet_id()
+    rng_start = int(ui_val("rowStart") or "1")
+    rng_end = int(ui_val("rowEnd") or "1")
+    colmap = build_column_map(sheet)
+    must = ["CÓDIGO DE LA ACTIVIDAD","Calidad SIG","ACCIONES DE RESTAURACIÓN AbE","TOTAL DE HECTÁREAS"]
+    for m in must:
+        if m not in colmap:
+            log(f"Missing column: {m}", "err"); return
+    code_id = colmap["CÓDIGO DE LA ACTIVIDAD"]
+    sig_id = colmap["Calidad SIG"]
+    abe_id = colmap["ACCIONES DE RESTAURACIÓN AbE"]
+    ha_id = colmap["TOTAL DE HECTÁREAS"]
+    updates = []
+    count = 0
+    for r in sheet["rows"]:
+        rn = r["rowNumber"]
+        if rn < rng_start or rn > rng_end: continue
+        code_val = extract_cell(r, code_id)
+        if not code_val: continue
+        sig_val = extract_cell(r, sig_id)
+        if sig_val in REVIEW_SET: continue
+        abe = extract_cell(r, abe_id)
+        ha = extract_cell(r, ha_id)
+        new_val = "Espera" if (abe is not None or ha is not None) else "Sí"
+        updates.append({"id": r["id"],"cells":[{"columnId": sig_id,"value": new_val}]})
+        count += 1
+        if len(updates) >= 50:
+            await api_put(f"/sheets/{sheet_id}/rows", updates)
+            updates.clear()
+    if updates:
+        await api_put(f"/sheets/{sheet_id}/rows", updates)
+    log(f"Updated Calidad SIG for {count} rows", "ok")
+
+async def list_attachments(*args):
+    sheet_id = get_active_sheet_id()
+    rng_start = int(ui_val("rowStart") or "1")
+    rng_end = int(ui_val("rowEnd") or "1")
+    log("Fetching rows with attachments ...")
+    # pagination loop
+    all_rows = []
+    page_size = 200
+    page = 1
+    while True:
+        data = await api_get(f"/sheets/{sheet_id}/rows?pageSize={page_size}&page={page}&include=attachments")
+        if not data: break
+        rows = data.get("data", [])
+        all_rows.extend(rows)
+        if len(rows) < page_size: break
+        page += 1
+    if not all_rows:
+        log("No rows retrieved or API blocked.", "err")
+        return
+    out_html = []
+    total_att = 0
+    for r in all_rows:
+        rn = r.get("rowNumber")
+        if rn < rng_start or rn > rng_end: continue
+        atts = r.get("attachments", [])
+        if not atts: continue
+        row_block = [f"<div><b>Row {rn}</b>"]
+        for a in atts:
+            name = a.get("name","(no name)")
+            att_id = a.get("id")
+            # second call needed for direct URL
+            row_block.append(f'<a class="dl" target="_blank" href="https://api.smartsheet.com/2.0/sheets/{sheet_id}/attachments/{att_id}">{name}</a>')
+            total_att += 1
+        row_block.append("</div>")
+        out_html.append("".join(row_block))
+    if not out_html:
+        attach_el.innerHTML = "No attachments in range."
+    else:
+        attach_el.innerHTML = "".join(out_html)
+    log(f"Listed {total_att} attachment(s)", "ok")
+
+# JS <-> Python wiring
+def bind_button(id_, coro):
+    btn = js.document.getElementById(id_)
+    async def handler(ev):
+        btn.disabled = True
+        try:
+            await coro()
+        except Exception as e:
+            log(f"{id_} error: {e}", "err")
+        finally:
+            btn.disabled = False
+    btn.addEventListener("click", js.pythonproxy(handler))
+
+bind_button("btnLoadSheet", load_sheet_preview)
+bind_button("btnGenerateCodes", generate_codes)
+bind_button("btnUpdateReview", update_review_status)
+bind_button("btnListAttachments", list_attachments)
+</py-script>
+
+<script>
+// Local storage config buttons removed (config is now read-only from env)
+function logJS(msg, cls=""){
+  const logEl = document.getElementById("log");
+  const div = document.createElement("div");
+  if(cls) div.className = cls;
+  const now = new Date().toLocaleTimeString();
+  div.textContent = `[${now}] ${msg}`;
+  logEl.appendChild(div);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+// Buttons removed; no handlers needed.
+document.getElementById("btnClearLog").onclick = ()=>{log.innerHTML="";};
+document.getElementById("btnCopyArcPy").onclick = ()=>{
+  const ta = document.getElementById("arcPyScript");
+  ta.select(); ta.setSelectionRange(0,99999);
+  document.execCommand("copy");
+  logJS("ArcPy helper script copied.","ok");
+};
+</script>
+
+</body>
+</html>

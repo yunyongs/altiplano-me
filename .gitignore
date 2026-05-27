@@ -1,0 +1,30 @@
+.env
+config.js
+__pycache__/
+.pytest_cache/
+.venv/
+.ipynb_checkpoints/
+*.docx
+
+# Notebook backups created before edits (may contain old outputs/paths — never share)
+*.bak
+*.bak_*
+
+# Windows device-name artifacts (created when .bat runs in Git Bash)
+nul
+NUL
+Exists
+
+
+# Internal programming documents (not shared)
+documents/
+
+# Power BI - entire folder excluded; if later included, keep these excluded:
+03_PowerBI_Dashboard/
+03_PowerBI_Dashboard/**/.pbi/
+03_PowerBI_Dashboard/**/unappliedChanges.json
+# Local Claude Code settings (machine-specific paths, env ids — never share)
+.claude/
+
+# Pencil design source (encrypted; not needed to run the app)
+*.pen

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!--
+    Altiplano Resiliente favicon: Green "A" with pine tree cutout.
+    Transparent background; tree is negative space inside the A.
+  -->
+  <defs>
+    <mask id="treeCut">
+      <!-- White = visible, Black = cut out -->
+      <rect width="512" height="512" fill="white"/>
+      <!-- Pine tree: 3-tier branches + trunk -->
+      <!-- Top tier -->
+      <polygon points="256,72 216,180 296,180" fill="black"/>
+      <!-- Middle tier -->
+      <polygon points="256,140 196,260 316,260" fill="black"/>
+      <!-- Bottom tier -->
+      <polygon points="256,210 172,340 340,340" fill="black"/>
+      <!-- Trunk -->
+      <rect x="240" y="340" width="32" height="60" fill="black"/>
+    </mask>
+  </defs>
+  <!-- The "A" shape with tree cut out -->
+  <g mask="url(#treeCut)">
+    <!-- Outer A shape -->
+    <polygon points="256,16 24,496 136,496 176,388 336,388 376,496 488,496" fill="#70b62c"/>
+    <!-- A crossbar negative space restored as green -->
+  </g>
+</svg>

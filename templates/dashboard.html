@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="local-token" content="{{ local_token }}">
+<title>AR Workflow – Altiplano Resiliente</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-header">
+      <div class="brand">
+        <img src="/static/favicon.svg" alt="AR" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">Altiplano</span>
+          <span class="brand-sub">Resiliente</span>
+        </div>
+      </div>
+      <button type="button" class="toggle-btn" id="sidebarToggle" onclick="toggleSidebar()"
+        data-title-es="Plegar menú" data-title-en="Collapse menu" title="Plegar menú">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-scroll">
+
+      <!-- ── CONFIGURACIÓN section ── -->
+      <div class="sb-group-label"><span class="lang-es">CONFIGURACIÓN</span><span class="lang-en">CONFIGURATION</span></div>
+      <div class="sb-sec">
+        <div class="sb-sec-hd" data-view="Config" onclick="navigateTo(\'Config\')">
+          <svg class="sb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span class="sb-lbl">Configuración</span>
+        </div>
+        <div class="sb-sec-bd">
+          <div class="sb-field">
+            <label for="sbWorkQuarter"
+              data-help-es="Seleccione primero el trimestre de trabajo. Define los grupos de ArcGIS Pro que usará el batch para ubicar shapefiles."
+              data-help-en="Select the work quarter first. It defines the ArcGIS Pro groups that the batch uses to place shapefiles.">
+              <span class="lang-es">Trimestre de trabajo</span><span class="lang-en">Work quarter</span>
+            </label>
+            <select id="sbWorkQuarter" onchange="syncWorkQuarterFromSidebar()">
+              <option value="">(sin trimestre)</option>
+            </select>
+            <div id="sbWorkQuarterInfo" class="sb-help-text">
+              <span class="lang-es">Seleccione el trimestre antes del componente. El batch buscará grupos como <code>2026_Q1</code>, <code>2026_Q1_point</code> y <code>2026_Q1_polygon</code>.</span>
+              <span class="lang-en">Select the quarter before the component. Batch placement will look for groups like <code>2026_Q1</code>, <code>2026_Q1_point</code>, and <code>2026_Q1_polygon</code>.</span>
+            </div>
+          </div>
+          <div class="sb-field">
+            <label for="sbComponent"
+              data-help-es="Componente del proyecto: C1 (principal), C2 (donaciones), C3."
+              data-help-en="Project component: C1 (main), C2 (grants), C3.">Componente</label>
+            <select id="sbComponent" onchange="syncComponentFromSidebar()">
+              <option value="C1">C1</option>
+              <option value="C2" selected>C2</option>
+              <option value="C3">C3</option>
+            </select>
+          </div>
+          <div class="sb-field">
+            <label for="sbDestFolder"
+              data-help-es="Carpeta de trabajo. Por defecto usa la ruta de .env; escriba una ruta para sobreescribirla."
+              data-help-en="Working folder. Defaults to .env path; type a path to override.">Carpeta de trabajo</label>
+            <input type="text" id="sbDestFolder" placeholder="(automático desde .env)" oninput="syncDestFolderFromSidebar()">
+            <div id="sbDestFolderPath" class="dest-folder-auto-path">—</div>
+          </div>
+        </div>
+        
+      </div>
+
+      <div class="sb-divider-line"></div>
+      <div class="sb-group-label"><span class="lang-es">FLUJO DE TRABAJO</span><span class="lang-en">WORKFLOW</span></div>
+
+      <!-- ── Paso 1: Smartsheet (includes 1-a Diagnóstico) ── -->
+      <div class="sb-sec">
+        <div class="sb-sec-hd" data-view="Paso1" onclick="navigateTo('Paso1')">
+          <svg class="sb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+          <span class="sb-lbl">Paso 1 — Smartsheet</span>
+        </div>
+        <div class="sb-sec-bd">
+          <!-- Cargar -->
+          <button type="button" class="sb-btn" onclick="loadSheet()" id="btnLoad"
+            data-help-es="Carga la vista previa filtrada del Smartsheet."
+            data-help-en="Loads the filtered Smartsheet preview.">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+            <span class="sb-btn-lbl">Cargar Vista Previa</span>
+          </button>
+          <button type="button" class="sb-btn" onclick="loadComments()"
+            data-help-es="Carga los comentarios de las filas visibles."
+            data-help-en="Loads comments for visible rows.">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="sb-btn-lbl">Cargar comentarios</span>
+          </button>
+          <!-- Herramientas -->
+          <div class="sb-sublabel">Herramientas</div>
+          <button type="button" class="sb-btn" onclick="generateCodes()" id="btnCodes"
+            data-help-es="Genera un código único para cada actividad que tiene fecha pero no código asignado."
+            data-help-en="Generates a unique code for each activity that has a date but no code assigned.">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+            <span class="sb-btn-lbl">Generar Códigos Faltantes</span>
+          </button>
+          <button type="button" class="sb-btn" onclick="fixBadDates()" id="btnSbFixDates"
+            data-help-es="Corrige el formato de fechas en las filas seleccionadas."
+            data-help-en="Fixes date formats in selected rows.">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span class="sb-btn-lbl">Corregir Fechas</span>
+          </button>
+          <button type="button" class="sb-btn hidden" onclick="c2ApplyFillDown()" id="btnSbC2FillDown"
+            data-help-es="Rellena celdas vacías de ORGANIZACIÓN y TRIMESTRE con el valor superior (solo C2)."
+            data-help-en="Fills empty ORGANIZACIÓN and TRIMESTRE cells with the value above (C2 only).">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>
+            <span class="sb-btn-lbl">Guardar Relleno (C2)</span>
+          </button>
+          <button type="button" class="sb-btn" onclick="updateReview()" id="btnReview"
+            data-help-es="Actualiza la revisión solo para filas que tienen datos de hectáreas."
+            data-help-en="Updates review only for rows that have hectares data.">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="sb-btn-lbl">Actualizar Revisión (SHP)</span>
+          </button>
+          <!-- Diagnóstico AGOL -->
+          <details class="sb-details" id="paso0Options">
+            <summary class="sb-summary"
+              data-help-es="Diagnóstico AGOL vs Smartsheet y opciones avanzadas."
+              data-help-en="AGOL vs Smartsheet diagnostics and advanced options.">
+              <span class="lang-es">Diagnóstico AGOL</span><span class="lang-en">AGOL Diagnostics</span>
+            </summary>
+            <div style="display:flex;flex-direction:column;gap:5px;padding-top:4px">
+
+              <!-- AGOL Connection / Conexión AGOL (OAuth 2.0 PKCE) -->
+              <div id="agolConnectPanel" class="sb-field" style="border:1px solid var(--ar-blue-light);border-radius:6px;padding:6px;margin-bottom:4px">
+                <div id="agolStatusLine" style="font-size:11px;margin-bottom:4px;color:var(--text-secondary)">
+                  <span class="lang-es">No conectado a AGOL</span><span class="lang-en">Not connected to AGOL</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:4px">
+                  <label for="agolOrgUrl" style="font-size:10px;margin:0"><span class="lang-es">URL de Organización</span><span class="lang-en">Organization URL</span></label>
+                  <input type="text" id="agolOrgUrl" placeholder="https://org.maps.arcgis.com" style="font-size:11px;padding:3px 6px">
+                </div>
+                <div style="display:flex;gap:4px">
+                  <button type="button" class="sb-btn" onclick="agolConnect()" id="btnAgolConnect"
+                    data-help-es="Iniciar sesión en AGOL via OAuth (navegador)."
+                    data-help-en="Sign in to AGOL via OAuth (browser).">
+                    <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    <span class="sb-btn-lbl lang-es">Conectar AGOL</span><span class="sb-btn-lbl lang-en">Connect AGOL</span>
+                  </button>
+                  <button type="button" class="sb-btn" onclick="agolDisconnect()" id="btnAgolDisconnect" style="display:none"
+                    data-help-es="Desconectar y borrar tokens de memoria."
+                    data-help-en="Disconnect and clear tokens from memory.">
+                    <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <span class="sb-btn-lbl lang-es">Desconectar</span><span class="sb-btn-lbl lang-en">Disconnect</span>
+                  </button>
+                </div>
+              </div>
+
+              <button type="button" class="sb-btn" onclick="paso0Diagnose()" id="btnPaso0"
+                data-help-es="Compara AGOL vs Smartsheet."
+                data-help-en="Compares AGOL vs Smartsheet.">
+                <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                <span class="sb-btn-lbl">Diagnosticar AGOL vs SS</span>
+              </button>
+              <div class="sb-field">
+                <label for="paso0Threshold">Tolerancia ha</label>
+                <input type="number" id="paso0Threshold" value="5" step="0.5" min="0" style="width:80px">
+              </div>
+              <div class="sb-field">
+                <label for="paso0PolygonUrl">URL Polígono (AGOL)</label>
+                <input type="text" id="paso0PolygonUrl" placeholder="(predeterminado)" style="font-size:11px">
+              </div>
+              <div class="sb-field">
+                <label for="paso0PointUrl">URL Punto (AGOL)</label>
+                <input type="text" id="paso0PointUrl" placeholder="(predeterminado)" style="font-size:11px">
+              </div>
+            </div>
+          </details>
+        </div>
+      </div><!-- /sb-sec Paso1 -->
+
+      <!-- ── Paso 2: SHP ↔ ArcGIS ── -->
+      <div class="sb-sec">
+        <div class="sb-sec-hd" data-view="Paso2" onclick="navigateTo('Paso2')">
+          <svg class="sb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <span class="sb-lbl">Paso 2 — SHP ↔ ArcGIS</span>
+        </div>
+        <div class="sb-sec-bd">
+          <div class="sb-mode-toggle" id="paso2ModeToggle">
+            <button type="button" class="sb-mode-btn active" id="btnModeAgent" onclick="setPaso2Mode('agent')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 11l3 3 7-7"/></svg>
+              Agent
+            </button>
+            <button type="button" class="sb-mode-btn" id="btnModeManual" onclick="setPaso2Mode('manual')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h3"/><path d="M15 17l5 3-5 3"/></svg>
+              Manual
+            </button>
+          </div>
+          <div id="agentSection">
+          <button type="button" class="sb-btn sb-btn-accent" onclick="AgentController.toggleAction()" id="btnAgentAction" disabled>
+            <svg class="sb-btn-ico" id="agentActionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span class="sb-btn-lbl" id="agentActionLabel">Iniciar Agente</span>
+          </button>
+          <div class="sb-agent-controls" id="agentControls">
+            <button type="button" class="sb-btn sb-btn-sm" onclick="AgentController.pause('user_pause')" id="btnAgentPause" disabled>
+              <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              <span class="sb-btn-lbl">Pausar</span>
+            </button>
+            <button type="button" class="sb-btn sb-btn-sm" onclick="AgentController.resume()" id="btnAgentResume" disabled>
+              <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span class="sb-btn-lbl">Reanudar</span>
+            </button>
+            <button type="button" class="sb-btn sb-btn-sm" onclick="AgentController.skipCurrent()" id="btnAgentSkip" disabled>
+              <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+              <span class="sb-btn-lbl">Saltar</span>
+            </button>
+            <button type="button" class="sb-btn sb-btn-sm sb-btn-danger" onclick="AgentController.cancel()" id="btnAgentCancel" disabled>
+              <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <span class="sb-btn-lbl">Cancelar</span>
+            </button>
+          </div>
+          <div id="agentManualPrompt" class="agent-manual-prompt hidden">
+            <p id="agentManualMsg"></p>
+            <button type="button" class="sb-btn sb-btn-sm" onclick="AgentController.resume()" id="btnAgentContinue">
+              <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span class="sb-btn-lbl">Continuar</span>
+            </button>
+          </div>
+          </div>
+          <div id="manualSection" style="display:none">
+          <div class="sb-sublabel">Manual</div>
+          <button type="button" class="sb-btn" onclick="listAttachments()" id="btnAttach">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            <span class="sb-btn-lbl">Listar Adjuntos</span>
+          </button>
+          <button type="button" class="sb-btn" onclick="batchDownload()" id="btnBatchDL">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="sb-btn-lbl">Descarga Batch + Validar</span>
+          </button>
+          <div class="sb-sublabel">Diagnóstico</div>
+          <button type="button" class="sb-btn" onclick="paso0Diagnose()" id="btnPaso2Diag">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <span class="sb-btn-lbl">Diagnosticar SS vs SHP</span>
+          </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Paso 3: Procesamiento Territorial ── -->
+      <div class="sb-sec">
+        <div class="sb-sec-hd" data-view="Paso3" onclick="navigateTo('Paso3')">
+          <svg class="sb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span class="sb-lbl">Paso 3 — ArcPy</span>
+        </div>
+        <div class="sb-sec-bd">
+          <button type="button" class="sb-btn sb-btn-accent" onclick="openScriptRunner(3)">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span class="sb-btn-lbl">Procesamiento Guiado</span>
+          </button>
+          <details class="sb-details">
+            <summary class="sb-summary">Scripts individuales</summary>
+            <div class="sb-script-grid">
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('import')">Importar CSV</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('merge_field_mapping')">3a. Merge</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('overlap_analysis')">3b. Overlap</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('duplicate_detection')">3c. Duplicados</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('erase_pipeline')">3d. Erase</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('spatial_join_micro')">3e. Join Micro</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('incentive_validation')">3f. Incentivos</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('append_official')">3g. Append</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('gis_vs_ss_comparison')">3h. GIS vs SS</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('backup_cumulative')">3i. Backup</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('export_excel')">3j. Excel</button>
+            </div>
+          </details>
+          <button type="button" class="sb-btn" onclick="showCleaningCompare()">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/><line x1="8" y1="9" x2="13" y2="9"/><line x1="8" y1="15" x2="13" y2="15"/></svg>
+            <span class="sb-btn-lbl">Ver Resultados Limpieza</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Paso 4: ArcGIS Online ── -->
+      <div class="sb-sec">
+        <div class="sb-sec-hd" data-view="Paso4" onclick="navigateTo('Paso4')">
+          <svg class="sb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span class="sb-lbl">Paso 4 — AGOL</span>
+        </div>
+        <div class="sb-sec-bd">
+          <button type="button" class="sb-btn sb-btn-accent" onclick="openScriptRunner(4)">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span class="sb-btn-lbl">Publicación Guiada</span>
+          </button>
+          <details class="sb-details">
+            <summary class="sb-summary">Scripts individuales</summary>
+            <div class="sb-script-grid">
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('update_wfl_point')">4a. WFL Punto</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('update_wfl_polygon')">4b. WFL Polígono</button>
+              <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('export_shapefiles')">4c. Exportar SHP</button>
+            </div>
+          </details>
+          <div class="sb-sublabel">Verificación</div>
+          <button type="button" class="sb-btn" onclick="run3WayVerify()" id="btn3WayVerify">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><circle cx="12" cy="12" r="10"/></svg>
+            <span class="sb-btn-lbl">Verificar SS vs GIS</span>
+          </button>
+          <button type="button" class="sb-btn" onclick="gen3WayScript()" id="btn3WayScript">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            <span class="sb-btn-lbl">Script 3 Fuentes</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Paso 5: Excel Master + Recepción M&E (Dafne) ── -->
+      <div class="sb-sec">
+        <div class="sb-sec-hd" data-view="Paso5" onclick="navigateTo('Paso5')">
+          <svg class="sb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+          <span class="sb-lbl">Paso 5 — Excel + M&amp;E</span>
+        </div>
+        <div class="sb-sec-bd">
+          <div class="sb-sublabel">5a — Excel</div>
+          <button type="button" class="sb-btn" onclick="generateExcelMaster()" id="btnExcelMaster">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span class="sb-btn-lbl">Generar Excel Maestro</span>
+          </button>
+          <div class="sb-sublabel">5b — M&amp;E Dafne</div>
+          <button type="button" class="sb-btn sb-btn-sm" onclick="dafneValidate()">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span class="sb-btn-lbl">Validar archivo</span>
+          </button>
+          <button type="button" class="sb-btn" onclick="dafneReceive()" id="btnDafneReceive">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="sb-btn-lbl">Colocar en BasePath</span>
+          </button>
+          <button type="button" class="sb-btn sb-btn-sm" onclick="dafneCheckStatus()">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span class="sb-btn-lbl">Estado BasePath</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Paso 6: Power BI ── -->
+      <div class="sb-sec">
+        <div class="sb-sec-hd" data-view="Paso6" onclick="navigateTo('Paso6')">
+          <svg class="sb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="2" width="4" height="19" rx="1"/></svg>
+          <span class="sb-lbl">Paso 6 — Power BI</span>
+        </div>
+        <div class="sb-sec-bd">
+          <button type="button" class="sb-btn" onclick="pbiCheckStatus()" id="btnPbiStatus">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <span class="sb-btn-lbl">Estado PBI Desktop</span>
+          </button>
+          <button type="button" class="sb-btn" onclick="pbiLaunch()" id="btnPbiLaunch">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span class="sb-btn-lbl">Abrir PBI Desktop</span>
+          </button>
+          <div class="sb-sublabel">Scripts</div>
+          <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('powerbi_refresh')">Script Refresh</button>
+          <button type="button" class="sb-btn sb-btn-sm" onclick="genScript('arcgis_portal_data')">Script Portal</button>
+          <div class="sb-sublabel">M&amp;E</div>
+          <button type="button" class="sb-btn" onclick="cmpRunComparison()" id="btnCmpRun">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span class="sb-btn-lbl">Ejecutar Comparación</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Paso 7: Documentación ── -->
+      <div class="sb-sec">
+        <div class="sb-sec-hd" data-view="Paso7" onclick="navigateTo('Paso7')">
+          <svg class="sb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span class="sb-lbl">Paso 7 — Reportes</span>
+        </div>
+        <div class="sb-sec-bd">
+          <button type="button" class="sb-btn sb-btn-sm" onclick="viewErrorReport()">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span class="sb-btn-lbl">Reporte Errores</span>
+          </button>
+          <button type="button" class="sb-btn sb-btn-sm" onclick="viewDataSummary()">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 9v12"/></svg>
+            <span class="sb-btn-lbl">Resumen Datos</span>
+          </button>
+          <button type="button" class="sb-btn" onclick="exportPbiPdf()" id="btnPbiExportPdf">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span class="sb-btn-lbl">Exportar PDF</span>
+          </button>
+          <button type="button" class="sb-btn sb-btn-sm" onclick="pbiPublishCheck()">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span class="sb-btn-lbl">Verificar Enlace PBI</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Orquestador ── -->
+      <div class="sb-sec">
+        <div class="sb-sec-hd" data-view="Orch" onclick="navigateTo('Orch')">
+          <svg class="sb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v4m0 14v4m-7.07-2.93l2.83-2.83m8.48-8.48l2.83-2.83M1 12h4m14 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg>
+          <span class="sb-lbl">Orquestador</span>
+        </div>
+        <div class="sb-sec-bd">
+          <button type="button" class="sb-btn sb-btn-accent" onclick="startPipeline()" id="btnPipeline">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span class="sb-btn-lbl">Iniciar Pipeline</span>
+          </button>
+          <button type="button" class="sb-btn sb-btn-sm" onclick="refreshOrchStatus()">Actualizar Estado</button>
+        </div>
+      </div>
+
+    </div><!-- /sidebar-scroll -->
+  </aside>
+
+  <div class="resize-handle" id="resizeHandle"></div>
+
+  <!-- ═══════════════════════ MAIN ═══════════════════════ -->
+  <div class="content-wrap">
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-sheet-info">
+          <span id="topbarSheet" class="topbar-sheet"><span class="lang-es">Sin hoja cargada</span><span class="lang-en">No sheet loaded</span></span>
+          <span id="topbarMeta" class="topbar-meta"></span>
+        </div>
+        <!-- ═══ S1: Mode Toggle ═══ -->
+        <!-- EN: Switch between guided Wizard and Advanced (sidebar) mode -->
+        <div class="mode-toggle" id="modeToggle">
+          <button id="btnWizard" class="mode-btn" onclick="setMode('wizard')"><span class="lang-es">Asistente</span><span class="lang-en">Wizard</span></button>
+          <button id="btnExpert" class="mode-btn active" onclick="setMode('expert')"><span class="lang-es">Avanzado</span><span class="lang-en">Expert</span></button>
+        </div>
+        <button id="btnSimulation" class="mode-btn sim-btn" onclick="toggleSimulation()"
+          data-title-es="Modo simulación — los datos no serán modificados"
+          data-title-en="Simulation mode — data will not be modified"
+          title="Modo simulación — los datos no serán modificados">
+          <span class="lang-es">Simulación</span><span class="lang-en">Simulation</span>
+        </button>
+      </div>
+      <div class="topbar-right">
+        <div class="lang-toggle" id="langToggle">
+          <span class="lang-toggle-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg></span>
+          <button class="lang-btn active" data-lang="es" onclick="setLang('es')">ES</button>
+          <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+        </div>
+        <button type="button" class="topbar-icon-btn" onclick="downloadLog()"
+          data-title-es="Descargar registro" data-title-en="Download log" title="Descargar registro">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <button type="button" class="topbar-icon-btn" onclick="toggleRightSidebar()"
+          id="topbarResultsBtn"
+          data-title-es="Mostrar resultados" data-title-en="Show results" title="Mostrar resultados">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ S2: Pipeline Progress ═══ -->
+    <div class="pipeline-progress" id="pipelineProgress">
+      <div class="pp-track" id="ppTrack"></div>
+    </div>
+
+    <main class="main" id="mainContent">
+
+
+
+      <!-- ═══ S1: Wizard Mode ═══ -->
+      <div id="wizardView" class="wizard-view hidden">
+        <div id="wizardSimBanner" class="wiz-sim-banner hidden">
+          ⚠ Modo simulación activo — los datos no serán modificados
+          <!-- EN: Simulation mode active — data will not be modified -->
+        </div>
+        <div id="wizardContent" class="wizard-content"></div>
+        <div class="wizard-nav">
+          <button id="wizPrev" onclick="wizardPrev()" class="btn-secondary">← Paso anterior</button>
+          <button id="wizNext" onclick="wizardNext()" class="btn-primary">Siguiente →</button>
+        </div>
+      </div>
+
+      
+      <!-- ═══ Paso Controls Area (Pencil nav refactoring) ═══ -->
+      <!-- Each view contains the controls formerly in the sidebar .sb-sec-bd -->
+      <div class="paso-controls-area hidden" id="pasoControlsArea">
+
+      <!-- ═══ Paso View: Config ═══ -->
+      <div id="viewConfig" class="paso-view">
+        <div class="pv-hd">
+          <svg class="pv-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <h2 class="pv-title">Configuración</h2>
+        </div>
+        <div class="pv-body">
+          <div class="pv-section full-width">
+<div class="sb-row2">
+            <div class="sb-field">
+              <label>Token</label>
+              <span id="tokenStatus" class="badge badge-gray">—</span>
+            </div>
+          </div>
+          <!-- Sheet IDs: hidden but kept for JS references -->
+          <div class="sheet-ids" style="display:none">
+            <div class="sheet-id-row"><span class="sid-lbl">C1</span><span id="cfgC1" class="sid-val">—</span></div>
+            <div class="sheet-id-row"><span class="sid-lbl">C2</span><span id="cfgC2" class="sid-val">—</span></div>
+            <div class="sheet-id-row"><span class="sid-lbl">C3</span><span id="cfgC3" class="sid-val">—</span></div>
+          </div>
+          <!-- Hidden component mirror for JS compatibility -->
+          <select id="component" style="display:none" aria-hidden="true">
+            <option value="C1">C1</option>
+            <option value="C2" selected>C2</option>
+            <option value="C3">C3</option>
+          </select>
+          <div class="sb-field">
+            <label for="workQuarter"
+              data-help-es="Seleccione primero el trimestre de trabajo. Define los grupos de ArcGIS Pro donde el batch ubicará shapefiles."
+              data-help-en="Select the work quarter first. It defines the ArcGIS Pro groups where batch placement will put shapefiles.">
+              <span class="lang-es">Trimestre de trabajo</span><span class="lang-en">Work quarter</span>
+            </label>
+            <select id="workQuarter" onchange="handleWorkQuarterChange()">
+              <option value="">(sin trimestre)</option>
+            </select>
+            <div id="workQuarterInfo" class="sb-help-text">
+              <span class="lang-es">Este valor controla los grupos de ArcGIS Pro para el lote actual.</span>
+              <span class="lang-en">This value controls the ArcGIS Pro groups for the current batch.</span>
+            </div>
+          </div>
+          <div class="sb-field">
+            <!-- EN: Folder where downloaded files are saved. -->
+            <label for="destFolder"
+              data-help-es="Carpeta donde se guardan los archivos descargados."
+              data-help-en="Folder where downloaded files are saved.">Carpeta de destino</label>
+            <div class="dest-folder-mode" role="radiogroup" aria-label="Modo de carpeta destino">
+              <label class="dest-folder-choice">
+                <input type="radio" name="destFolderMode" id="destFolderModeAuto" value="auto" checked
+                  onchange="setDestFolderMode('auto')">
+                <span>Automático (.env)</span>
+              </label>
+              <label class="dest-folder-choice">
+                <input type="radio" name="destFolderMode" id="destFolderModeManual" value="manual"
+                  onchange="setDestFolderMode('manual')">
+                <span>Manual</span>
+              </label>
+            </div>
+            <div id="destFolderHint" class="sb-help-text">
+              Usa la ruta configurada en .env para el componente seleccionado.
+            </div>
+            <div id="destFolderAutoPath" class="dest-folder-auto-path">—</div>
+            <input type="text" id="destFolder" placeholder="(cargando de .env…)"
+              oninput="handleDestFolderInput()">
+          </div>
+          <!-- EN: Configure local folders for this PC (OneDrive, GDB, ArcGIS Pro). -->
+          <button type="button" class="sb-btn" onclick="showPathSettings()"
+            data-help-es="Configure las carpetas locales de este PC (OneDrive, GDB, ArcGIS Pro). Estos valores se guardan en .env y no se suben a Git."
+            data-help-en="Set local folder paths for this PC (OneDrive, GDB, ArcGIS Pro). Saved in .env and never committed to Git.">
+            <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="sb-btn-lbl">Rutas Locales (este PC)</span>
+          </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Paso View: Paso1 ═══ -->
+      <div id="viewPaso1" class="paso-view">
+        <div class="pv-hd">
+          <svg class="pv-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+          <h2 class="pv-title">Paso 1 — Smartsheet</h2>
+        </div>
+        <div class="pv-body">
+          <div class="pv-section full-width">
+<!-- ═══ S6: Summary Dashboard (accordion) ═══ -->
+          <div id="summaryPanel" class="panel hidden">
+            <button type="button" class="summary-accordion-hd" id="summaryToggle" onclick="toggleSummaryAccordion()" aria-expanded="true">
+              <span class="panel-title">Resumen</span>
+              <span id="summaryMeta" class="panel-meta"></span>
+              <svg id="summaryChevron" class="summary-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <div id="summaryBody" class="summary-body">
+              <div class="summary-grid" id="summaryGrid"></div>
+              <div class="summary-chart" id="summaryChart"></div>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Paso View: Paso2 ═══ -->
+      <div id="viewPaso2" class="paso-view">
+        <div class="pv-hd">
+          <svg class="pv-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <h2 class="pv-title">Paso 2 — SHP ↔ ArcGIS</h2>
+        </div>
+        <div class="pv-body">
+          <!-- ── Agent section (status + progress; actions in sidebar) ── -->
+          <div id="agentSectionMain">
+            <div id="agentStatus" class="agent-status agent-idle">
+              <span id="agentStateLabel">Agent: Idle</span>
+              <span id="agentProgress">0 / 0</span>
+            </div>
+            <div class="agent-bar-track">
+              <div id="agentProgressBar" class="agent-bar-fill" style="width:0%"></div>
+            </div>
+            <div class="sb-help-text" style="margin-top:4px">
+              <span class="lang-es">Usa el panel izquierdo para iniciar el agente o las operaciones manuales.</span>
+              <span class="lang-en">Use the left panel to start the agent or manual operations.</span>
+            </div>
+          </div>
+          <!-- ── Manual section placeholder ── -->
+          <div id="manualSectionMain" style="display:none">
+            <div class="sb-help-text">
+              <span class="lang-es">Usa los botones del panel izquierdo para listar adjuntos y descargar.</span>
+              <span class="lang-en">Use the left panel buttons to list attachments and download.</span>
+            </div>
+          </div>
+          <!-- Results area -->
+          <div id="paso2Results"></div>
+        </div>
+      </div>
+
+      <!-- ═══ Paso View: Paso3 ═══ -->
+      <div id="viewPaso3" class="paso-view">
+        <div class="pv-hd">
+          <svg class="pv-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <h2 class="pv-title">Paso 3 — ArcPy / Procesamiento</h2>
+        </div>
+        <div class="pv-body">
+          <div class="pv-section full-width">
+            <div class="sb-field">
+            <!-- EN: Path to the CSV-to-point geodatabase (.gdb) file. -->
+            <label for="gdbPath"
+              data-help-es="Ruta al GDB para conversión CSV a punto. Ejemplo: D:\AR_2025_Q3.gdb"
+              data-help-en="Path to CSV-to-point geodatabase (.gdb). Example: D:\AR_2025_Q3.gdb">CSVPOINT_TO_GDB (.gdb)</label>
+            <input type="text" id="gdbPath" placeholder="(cargando de .env…)">
+          </div>
+          <div class="sb-field">
+            <!-- EN: Current quarter identifier. Format: T[year]_Q[quarter]. -->
+            <label for="currentQt"
+              data-help-es="Trimestre actual. Formato: T2025_Q1 = primer trimestre 2025."
+              data-help-en="Current quarter. Format: T2025_Q1 = first quarter 2025.">Trimestre actual</label>
+            <input type="text" id="currentQt" placeholder="T2025_Q1">
+          </div>
+          <div class="sb-field">
+            <label for="officialPolygon">Capa Oficial Polígono</label>
+            <input type="text" id="officialPolygon" value="AR_Oficial_poligono_GTM">
+          </div>
+          <div class="sb-field">
+            <label for="officialPoint">Capa Oficial Punto</label>
+            <input type="text" id="officialPoint" value="AR_Oficial_punto_GTM">
+          </div>
+          <div class="sb-field">
+            <label for="baseMicroMuni">BASE Micro MUNI</label>
+            <input type="text" id="baseMicroMuni" value="BASE_Micro_MUNI">
+          </div>
+          <div class="sb-field">
+            <label for="smartsheetTable">Tabla Smartsheet (GDB)</label>
+            <input type="text" id="smartsheetTable" value="ssheet">
+          </div>
+          <div class="sb-field">
+            <label for="csvPath">CSV (del Paso 1)</label>
+            <input type="text" id="csvPath" placeholder="(cargando de .env…)">
+          </div>
+          <div class="sb-field">
+            <label for="excelPath">Ruta Excel de Salida</label>
+            <input type="text" id="excelPath" placeholder="(cargando de .env…)">
+          </div>
+
+          <!-- ── Criterios de Limpieza / Cleaning Criteria (G4) ── -->
+          <details class="sb-details criteria-panel" id="criteriaPanelDetails">
+            <summary class="sb-summary criteria-summary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   style="width:14px;height:14px;margin-right:6px;vertical-align:middle;flex-shrink:0;">
+                <path d="M9 12l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="2"/>
+              </svg>
+              Criterios de Limpieza / Cleaning Criteria
+            </summary>
+            <div class="criteria-content">
+
+              <div class="criteria-row">
+                <label class="criteria-lbl" for="criteriaQuarter">Trimestre / Quarter</label>
+                <div class="criteria-field-row">
+                  <select id="criteriaQuarter" class="select-sm criteria-select"
+                          onchange="loadCriteria(this.value)">
+                    <option value="">— seleccionar —</option>
+                  </select>
+                  <button type="button" class="btn-icon-sm" onclick="refreshCriteriaQuarters()"
+                          title="Refrescar trimestres / Refresh quarters">↺</button>
+                </div>
+              </div>
+
+              <div class="criteria-form" id="criteriaForm">
+                <div class="criteria-form-title">Agregar criterio / Add criterion</div>
+                <div class="criteria-row">
+                  <label class="criteria-lbl" for="criteriaLayer">Capa afectada / Affected layer <span class="req">*</span></label>
+                  <input type="text" id="criteriaLayer" class="input-sm" placeholder="AR_Oficial_poligono_GTM">
+                </div>
+                <div class="criteria-row">
+                  <label class="criteria-lbl" for="criteriaReason">Razón / Reason <span class="req">*</span></label>
+                  <input type="text" id="criteriaReason" class="input-sm" placeholder="Duplicado con C2 organización XYZ…">
+                </div>
+                <div class="criteria-row">
+                  <label class="criteria-lbl" for="criteriaDecision">Decisión / Decision <span class="req">*</span></label>
+                  <input type="text" id="criteriaDecision" class="input-sm" placeholder="Eliminar usando Erase">
+                </div>
+                <div class="criteria-row">
+                  <label class="criteria-lbl" for="criteriaCdg">CdgActvdd</label>
+                  <input type="text" id="criteriaCdg" class="input-sm" placeholder="241014_C2_XYZ_a">
+                </div>
+                <div class="criteria-row">
+                  <label class="criteria-lbl" for="criteriaBy">Registrado por / Recorded by</label>
+                  <input type="text" id="criteriaBy" class="input-sm" value="coordinator">
+                </div>
+                <button type="button" class="sb-btn criteria-add-btn" onclick="addCriterionEntry()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       style="width:13px;height:13px;margin-right:4px;flex-shrink:0;">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Agregar / Add
+                </button>
+              </div>
+
+              <div id="criteriaTableWrap" class="criteria-table-wrap" style="display:none;">
+                <div class="criteria-table-hd">
+                  <span id="criteriaTableTitle" class="criteria-table-title">Criterios guardados</span>
+                  <button type="button" class="btn-export-pdf" onclick="exportCriteriaPdf()" id="btnExportCriteriaPdf">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         style="width:13px;height:13px;margin-right:4px;flex-shrink:0;">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Exportar PDF / Export PDF
+                  </button>
+                </div>
+                <div class="criteria-table-scroll">
+                  <table class="criteria-table" id="criteriaTable">
+                    <thead>
+                      <tr>
+                        <th>#</th><th>Capa / Layer</th><th>Razón / Reason</th>
+                        <th>Decisión / Decision</th><th>CdgActvdd</th><th>Por / By</th><th>Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody id="criteriaTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div id="criteriaStatus" class="criteria-status" style="display:none;"></div>
+            </div>
+          </details>
+
+          <!-- Results area for cleaning compare -->
+          <div id="paso3CleaningResult" style="display:none;margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Paso View: Paso4 ═══ -->
+      <div id="viewPaso4" class="paso-view">
+        <div class="pv-hd">
+          <svg class="pv-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <h2 class="pv-title">Paso 4 — ArcGIS Online (AGOL)</h2>
+        </div>
+        <div class="pv-body">
+          <div class="pv-section full-width">
+            <div class="sb-field">
+            <label for="gdbFullPath">Ruta completa GDB</label>
+            <input type="text" id="gdbFullPath" placeholder="(cargando de .env…)">
+          </div>
+          <div class="sb-field">
+            <label for="exportFolder">Carpeta Shapes Export</label>
+            <input type="text" id="exportFolder" placeholder="(cargando de .env…)">
+          </div>
+
+          <!-- ── Verificación 3 Fuentes / 3-Way Verification (G6) ── -->
+          <hr class="sb-divider">
+          <details class="sb-details">
+            <summary class="sb-summary"
+              data-help-es="Compara Smartsheet (fuente original) contra GIS y AGOL. Smartsheet = verdad absoluta."
+              data-help-en="Compares Smartsheet (ground truth) against GIS GDB and AGOL Feature Layer.">
+              Verificación 3 Fuentes / 3-Way Check
+            </summary>
+            <div style="display:flex; flex-direction:column; gap:5px; padding-top:4px">
+              <div class="sb-field">
+                <label for="verify3waySsCsv">CSV SS (para script)</label>
+                <input type="text" id="verify3waySsCsv" placeholder="D:\AR\smartsheet_export.csv">
+              </div>
+              <div class="sb-field">
+                <label for="verify3wayGdbPath">Ruta GDB (para script)</label>
+                <input type="text" id="verify3wayGdbPath" placeholder="D:\AR_2026.gdb">
+              </div>
+              <div class="sb-field">
+                <label for="verify3wayFcName">FC Name</label>
+                <input type="text" id="verify3wayFcName" placeholder="AR_Oficial_poligono_GTM">
+              </div>
+              <div class="sb-field">
+                <label for="verify3wayAgolUrl">AGOL URL (para script)</label>
+                <input type="text" id="verify3wayAgolUrl" placeholder="https://services.arcgis.com/…">
+              </div>
+              <div class="sb-field">
+                <label for="verify3wayGisRecords">Registros GIS (JSON, opcional)</label>
+                <textarea id="verify3wayGisRecords" rows="2" title="JSON de registros GIS / GIS records JSON" placeholder='[{"CdgActvdd":"241014_C1_ROM_a","Area_ha":5.2}]' style="font-size:10px; resize:vertical"></textarea>
+              </div>
+              <!-- Results display -->
+              <div id="verify3wayResult" style="display:none;margin-top:4px;font-size:12px"></div>
+            </div>
+          </details>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Paso View: Paso5 ═══ -->
+      <div id="viewPaso5" class="paso-view">
+        <div class="pv-hd">
+          <svg class="pv-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+          <h2 class="pv-title">Paso 5 — Excel + M&amp;E</h2>
+        </div>
+        <div class="pv-body">
+          <div class="pv-section full-width">
+            <!-- ── 5a: Excel Maestro ── -->
+            <div style="font-size:11px;color:var(--text-2,#888);margin-bottom:4px;font-weight:600">
+              5a — Excel Maestro
+            </div>
+            <div id="excelMasterResult" style="display:none;font-size:12px;margin-bottom:6px"></div>
+
+            <!-- ── 5b: Recepción M&E Dafne ── -->
+            <div style="font-size:11px;color:var(--text-2,#888);margin:10px 0 4px;font-weight:600">
+              5b — Recepción M&amp;E / M&amp;E Reception
+            </div>
+
+            <div id="dafneStatusBar" style="font-size:11px;color:var(--text-2,#888);margin-bottom:6px"></div>
+
+            <label style="font-size:11px;color:var(--text-2,#888);display:block;margin-bottom:2px">
+              Trimestre / Quarter
+            </label>
+            <input type="text" id="dafneQuarter" placeholder="T2026_Q2"
+              style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border,#d0d0d0);border-radius:4px;font-size:12px;margin-bottom:6px" />
+
+            <label style="font-size:11px;color:var(--text-2,#888);display:block;margin-bottom:2px">
+              Ruta archivo / File path (Tbl_Integrado.xlsx)
+            </label>
+            <input type="text" id="dafneFilePath"
+              placeholder="C:\Usuarios\...\Tbl_Integrado.xlsx"
+              style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border,#d0d0d0);border-radius:4px;font-size:12px;margin-bottom:4px" />
+            <div id="dafneValidResult" style="font-size:12px;margin:4px 0;display:none"></div>
+
+            <label style="font-size:11px;color:var(--text-2,#888);display:block;margin:6px 0 2px">
+              BasePath Power BI
+            </label>
+            <input type="text" id="dafneBasePath"
+              placeholder="C:\OneDrive\AR\datos\"
+              style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border,#d0d0d0);border-radius:4px;font-size:12px;margin-bottom:4px" />
+            <div id="dafneReceiveResult" style="font-size:12px;margin:4px 0;display:none"></div>
+
+            <details id="dafneHistoryDetails" style="margin-top:8px">
+              <summary style="font-size:11px;color:var(--ar-blue,#003f6e);cursor:pointer;user-select:none">
+                Historial de recepción / Reception history
+              </summary>
+              <div style="margin-top:4px">
+                <button type="button" class="sb-btn sb-btn-sm" onclick="dafneLoadHistory()">
+                  Cargar historial / Load history
+                </button>
+                <div id="dafneHistoryTable" style="font-size:11px;margin-top:4px"></div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Paso View: Paso6 ═══ -->
+      <div id="viewPaso6" class="paso-view">
+        <div class="pv-hd">
+          <svg class="pv-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="2" width="4" height="19" rx="1"/></svg>
+          <h2 class="pv-title">Paso 6 — Power BI</h2>
+        </div>
+        <div class="pv-body">
+          <div class="pv-section full-width">
+            <!-- PBI status result area -->
+            <div id="pbiStatusResult" style="display:none;font-size:12px;margin-bottom:8px"></div>
+
+            <!-- ── M&E Comparison Panel ─────────────────────────────── -->
+            <div style="border-top:1px solid var(--border,#d0d0d0);padding-top:8px">
+              <div style="font-size:11px;font-weight:700;color:var(--ar-blue,#003f6e);margin-bottom:6px;letter-spacing:.3px">
+                Comparación M&amp;E / M&amp;E Comparison
+              </div>
+
+              <label style="font-size:11px;color:var(--text-2,#888);display:block;margin-bottom:2px">
+                Trimestre / Quarter
+              </label>
+              <input type="text" id="cmpQuarter" placeholder="T2026_Q2"
+                style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border,#d0d0d0);border-radius:4px;font-size:12px;margin-bottom:6px" />
+
+              <label style="font-size:11px;color:var(--text-2,#888);display:block;margin-bottom:2px">
+                Ruta Tbl_Integrado.xlsx (Dafne)
+              </label>
+              <input type="text" id="cmpIntegradoPath"
+                placeholder="C:\...\Tbl_Integrado.xlsx"
+                style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border,#d0d0d0);border-radius:4px;font-size:12px;margin-bottom:6px" />
+
+              <label style="font-size:11px;color:var(--text-2,#888);display:block;margin-bottom:2px">
+                Fuente PBI / PBI Source
+              </label>
+              <select id="cmpPbiType"
+                onchange="cmpTogglePbiSource()"
+                style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border,#d0d0d0);border-radius:4px;font-size:12px;margin-bottom:4px">
+                <option value="excel">Excel exportado / Exported Excel</option>
+                <option value="inline">Sin datos PBI / No PBI data</option>
+              </select>
+              <div id="cmpPbiExcelRow">
+                <input type="text" id="cmpPbiExcelPath"
+                  placeholder="C:\...\pbi_export.xlsx"
+                  style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border,#d0d0d0);border-radius:4px;font-size:12px;margin-bottom:4px" />
+                <input type="text" id="cmpPbiExcelSheet"
+                  placeholder="Hoja / Sheet (opcional)"
+                  style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border,#d0d0d0);border-radius:4px;font-size:12px;margin-bottom:6px" />
+              </div>
+
+              <div id="cmpStatus" style="font-size:11px;margin:4px 0;display:none"></div>
+
+              <div id="cmpResultsWrap" style="display:none;margin-top:8px">
+                <div style="font-size:11px;font-weight:600;color:var(--ar-blue,#003f6e);margin-bottom:4px">
+                  Resultados / Results
+                </div>
+                <table class="compare-table" id="cmpTable">
+                  <thead>
+                    <tr>
+                      <th>Indicador</th><th>Dafne</th><th>PBI</th><th>Δ</th><th>Decisión</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cmpTableBody"></tbody>
+                </table>
+                <button type="button" class="sb-btn" onclick="cmpSaveDecisions()" id="btnCmpSave"
+                  style="margin-top:8px">
+                  <svg class="sb-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  <span class="sb-btn-lbl">Guardar Decisiones / Save Decisions</span>
+                </button>
+              </div>
+
+              <details style="margin-top:6px">
+                <summary style="font-size:11px;color:var(--ar-blue,#003f6e);cursor:pointer;user-select:none">
+                  Reporte guardado / Saved report
+                </summary>
+                <div style="margin-top:4px">
+                  <button type="button" class="sb-btn sb-btn-sm" onclick="cmpLoadReport()">
+                    Cargar reporte / Load report
+                  </button>
+                  <div id="cmpReportWrap" style="font-size:11px;margin-top:4px"></div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Paso View: Paso7 ═══ -->
+      <div id="viewPaso7" class="paso-view">
+        <div class="pv-hd">
+          <svg class="pv-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <h2 class="pv-title">Paso 7 — Reportes</h2>
+        </div>
+        <div class="pv-body">
+          <div class="pv-section full-width">
+            <!-- PDF export inputs -->
+            <div class="sb-field">
+              <label for="pbiReportName">Nombre del reporte / Report name</label>
+              <input type="text" id="pbiReportName" placeholder="AR_Dashboard" value="AR_Dashboard">
+            </div>
+            <div class="sb-field">
+              <label for="pbiOutputPath">Carpeta de salida / Output folder</label>
+              <input type="text" id="pbiOutputPath" placeholder="C:\informes\">
+            </div>
+            <div id="pbiPdfResult" style="display:none;margin-top:6px"></div>
+
+            <!-- Publish check input -->
+            <div style="margin-top:12px">
+              <label style="font-size:11px;color:var(--text-2,#888);display:block;margin-bottom:4px">
+                Verificar Enlace Power BI / Check Power BI Link
+              </label>
+              <input type="url" id="publishUrlInput"
+                placeholder="https://app.powerbi.com/view?r=..."
+                style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border,#d0d0d0);border-radius:4px;font-size:12px;margin-bottom:4px"
+                onkeydown="if(event.key==='Enter') pbiPublishCheck()" />
+              <div id="publishCheckResult" style="margin-top:6px;font-size:12px;display:none"></div>
+            </div>
+
+            <!-- Error / summary result areas -->
+            <div id="errorReportResult" style="display:none;margin-top:8px"></div>
+            <div id="dataSummaryResult" style="display:none;margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Paso View: Orch ═══ -->
+      <div id="viewOrch" class="paso-view">
+        <div class="pv-hd">
+          <svg class="pv-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4m0 14v4m-7.07-2.93l2.83-2.83m8.48-8.48l2.83-2.83M1 12h4m14 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg>
+          <h2 class="pv-title">Orquestador</h2>
+        </div>
+        <div class="pv-body">
+          <div id="orchProgress" class="orch-progress"></div>
+          <div class="sb-help-text" style="margin-top:8px">
+            <span class="lang-es">Usa el panel izquierdo para iniciar o actualizar el estado del pipeline.</span>
+            <span class="lang-en">Use the left panel to start or refresh the pipeline status.</span>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="emptyState" class="empty-state">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+        <div class="empty-title">Sin datos</div>
+        <div class="empty-desc">Carga una hoja de Smartsheet desde el panel izquierdo para visualizar los resultados aquí.</div>
+      </div>
+
+      <!-- ═══ Paso 1-a: Diagnóstico AGOL vs Smartsheet — results in right sidebar ═══ -->
+      <div id="paso0Panel" class="hidden"></div>
+
+      <!-- Sheet Preview -->
+      <div id="sheetPreview" class="panel hidden">
+        <!-- ── Filtros de la hoja (sit directly above the table) ── -->
+        <div class="sp-filter-panel">
+          <div class="sb-filter-label">Filtros</div>
+          <!-- Dropdowns: 5-column grid -->
+          <div class="pv-filter-dropdowns">
+            <!-- Tipo (C2-only, hidden until C2 loaded) -->
+            <div class="sb-ms-dropdown hidden" id="sbFilterTipo" data-filter="tipo">
+              <button type="button" class="sb-ms-toggle" onclick="toggleSbMsDropdown(this)">Tipo <span class="sb-ms-arrow">▾</span></button>
+              <div class="sb-ms-menu">
+                <label class="sb-ms-option"><input type="checkbox" value="PPD" onchange="syncSbFilter('tipo',this)"> Pequeña (PPD)</label>
+                <label class="sb-ms-option"><input type="checkbox" value="PMD" onchange="syncSbFilter('tipo',this)"> Mediana (PMD)</label>
+              </div>
+            </div>
+            <!-- Nº Contrato (C2-only) -->
+            <div class="sb-ms-dropdown hidden" id="sbFilterContrato" data-filter="contrato">
+              <button type="button" class="sb-ms-toggle" onclick="toggleSbMsDropdown(this)">Nº Contrato <span class="sb-ms-arrow">▾</span></button>
+              <div class="sb-ms-menu" id="sbFilterContratoMenu"></div>
+            </div>
+            <!-- Trimestre (all components — pre-populated with static quarters) -->
+            <div class="sb-ms-dropdown" id="sbFilterTrimestre" data-filter="trimestre">
+              <button type="button" class="sb-ms-toggle" onclick="toggleSbMsDropdown(this)">Trimestre <span class="sb-ms-arrow">▾</span></button>
+              <div class="sb-ms-menu" id="sbFilterTrimestreMenu"></div>
+            </div>
+            <!-- Hectáreas -->
+            <div class="sb-ms-dropdown" id="sbFilterHectareas" data-filter="hectareas">
+              <button type="button" class="sb-ms-toggle" onclick="toggleSbMsDropdown(this)">Hectáreas <span class="sb-ms-arrow">▾</span></button>
+              <div class="sb-ms-menu">
+                <label class="sb-ms-option"><input type="checkbox" value="con_valor" onchange="syncSbFilter('hectareas',this)"> Con valor (&gt;0)</label>
+                <label class="sb-ms-option"><input type="checkbox" value="sin_valor" onchange="syncSbFilter('hectareas',this)"> Sin valor (0)</label>
+              </div>
+            </div>
+            <!-- Calidad SIG -->
+            <div class="sb-ms-dropdown" id="sbFilterCalidadSIG" data-filter="calidadSig">
+              <button type="button" class="sb-ms-toggle" onclick="toggleSbMsDropdown(this)">Calidad SIG <span class="sb-ms-arrow">▾</span></button>
+              <div class="sb-ms-menu">
+                <label class="sb-ms-option"><input type="checkbox" value="Sí" onchange="syncSbFilter('calidadSig',this)"> Sí</label>
+                <label class="sb-ms-option"><input type="checkbox" value="No" onchange="syncSbFilter('calidadSig',this)"> No</label>
+                <label class="sb-ms-option"><input type="checkbox" value="Espera" onchange="syncSbFilter('calidadSig',this)"> Espera</label>
+                <label class="sb-ms-option"><input type="checkbox" value="" onchange="syncSbFilter('calidadSig',this)"> (vacío / null)</label>
+              </div>
+            </div>
+          </div>
+          <!-- Checkboxes: single row -->
+          <div class="pv-filter-checks">
+            <label class="sb-filter-check sb-filter-code-search"
+              data-help-es="Buscar por CÓDIGO DE LA ACTIVIDAD (coincidencia parcial, no distingue mayúsculas)."
+              data-help-en="Search by CÓDIGO DE LA ACTIVIDAD (substring, case-insensitive).">
+              <span class="lang-es">Código:</span><span class="lang-en">Code:</span>
+              <input type="text" id="filterCodigo" class="filter-input-code"
+                placeholder="ej: 250731_C2_CAL"
+                oninput="onFilterChange()"
+                autocomplete="off"
+                spellcheck="false">
+            </label>
+            <label class="sb-filter-check"
+              data-help-es="Filas con fecha pero sin código."
+              data-help-en="Rows with date but no code.">
+              <input type="checkbox" id="sbFilterMissingCode" onchange="syncSbCheckbox('filterMissingCode',this)">
+              <span>Sin código</span>
+            </label>
+            <label class="sb-filter-check"
+              data-help-es="Filas con shapefile (ZIP) adjunto."
+              data-help-en="Rows with shapefile (ZIP) attached.">
+              <input type="checkbox" id="sbFilterHasShapefile" onchange="syncSbCheckbox('filterHasShapefile',this)">
+              <span>Con shapefile</span>
+            </label>
+            <label class="sb-filter-check"
+              data-help-es="Filas con fecha en formato texto incorrecto."
+              data-help-en="Rows with bad date format.">
+              <input type="checkbox" id="sbFilterBadDate" onchange="syncSbCheckbox('filterBadDate',this)">
+              <span><span class="lang-es">Fecha errónea</span><span class="lang-en">Bad date</span></span>
+            </label>
+          </div>
+          <!-- Filter status row -->
+          <div class="sb-filter-status">
+            <button type="button" class="sb-clear-btn" onclick="clearAllFilters()" title="Limpiar filtros">✕ Clear</button>
+            <span id="sbFilterCount" class="sb-row-count"></span>
+          </div>
+        </div>
+        <!-- filterBar hidden — filters controlled from .sp-filter-panel above -->
+        <div id="filterBar" style="display:none" aria-hidden="true">
+            <!-- C2-only filters: hidden here, controlled from sidebar -->
+            <div class="ms-dropdown hidden" id="filterTipo" data-filter="tipo" style="display:none">
+              <div class="ms-menu">
+                <label class="ms-option"><input type="checkbox" value="PPD" onchange="onFilterChange()"> PPD</label>
+                <label class="ms-option"><input type="checkbox" value="PMD" onchange="onFilterChange()"> PMD</label>
+              </div>
+            </div>
+            <div class="ms-dropdown hidden" id="filterContrato" data-filter="contrato" style="display:none">
+              <div class="ms-menu" id="filterContratoMenu"></div>
+            </div>
+            <div class="ms-dropdown hidden" id="filterTrimestre" data-filter="trimestre" style="display:none">
+              <div class="ms-menu" id="filterTrimestreMenu"></div>
+            </div>
+            <!-- Common filters -->
+            <label class="filter-item"
+              data-help-es="Muestra solo filas con fecha pero sin código asignado."
+              data-help-en="Show only rows that have a date but no code assigned.">
+              <input type="checkbox" id="filterMissingCode" onchange="onFilterChange()">
+              <span>Sin código</span>
+            </label>
+            <label class="filter-item"
+              data-help-es="Muestra solo filas con shapefile (ZIP) adjunto."
+              data-help-en="Show only rows that have a shapefile (ZIP) attached.">
+              <input type="checkbox" id="filterHasShapefile" onchange="onFilterChange()">
+              <span>Con shapefile</span>
+            </label>
+            <!-- Hectáreas filter -->
+            <div class="ms-dropdown" id="filterHectareas" data-filter="hectareas">
+              <button type="button" class="ms-toggle" onclick="toggleMsDropdown(this)">Hectáreas <span class="ms-arrow">▾</span></button>
+              <div class="ms-menu">
+                <label class="ms-option"><input type="checkbox" value="con_valor" onchange="onFilterChange()"> Con valor (&gt;0)</label>
+                <label class="ms-option"><input type="checkbox" value="sin_valor" onchange="onFilterChange()"> Sin valor (0 o vacío)</label>
+              </div>
+            </div>
+            <!-- Calidad SIG multi-select filter -->
+            <div class="ms-dropdown" id="filterCalidadSIG" data-filter="calidadSig">
+              <button type="button" class="ms-toggle" onclick="toggleMsDropdown(this)">Calidad SIG <span class="ms-arrow">▾</span></button>
+              <div class="ms-menu">
+                <label class="ms-option"><input type="checkbox" value="Sí" onchange="onFilterChange()"> Sí</label>
+                <label class="ms-option"><input type="checkbox" value="No" onchange="onFilterChange()"> No</label>
+                <label class="ms-option"><input type="checkbox" value="Espera" onchange="onFilterChange()"> Espera</label>
+                <label class="ms-option"><input type="checkbox" value="" onchange="onFilterChange()"> (vacío / null)</label>
+              </div>
+            </div>
+            <!-- Fecha errónea filter + fix -->
+            <label class="filter-item"
+              data-help-es="Muestra filas con fecha en formato texto incorrecto (ej: 8-ago-25)."
+              data-help-en="Show rows with dates stored as text in wrong format (e.g. 8-ago-25).">
+              <input type="checkbox" id="filterBadDate" onchange="onFilterChange()">
+              <span><span class="lang-es">Fecha errónea</span><span class="lang-en">Bad date</span></span>
+            </label>
+            <button type="button" class="btn-sm btn-fix-date hidden" id="btnFixDates" onclick="fixBadDates()"
+              data-title-es="Corregir fechas en formato texto" data-title-en="Fix text-format dates"
+              title="Corregir fechas en formato texto / Fix text-format dates"><span class="lang-es">Corregir fechas</span><span class="lang-en">Fix dates</span></button>
+            <select id="filterCommentMonth" onchange="onFilterChange()" class="filter-select">
+              <option value="" data-es="Comentario: todos" data-en="Comment: all">Comentario: todos</option>
+            </select>
+            <button type="button" class="btn-filter-clear hidden" id="btnClearFilters" onclick="clearAllFilters()">✕ <span class="lang-es">Limpiar</span><span class="lang-en">Clear</span></button>
+            <span id="filterCount" class="filter-count"></span>
+        </div>
+        <div id="c2FillDownBar" class="c2-filldown-bar hidden">
+          <button type="button" class="btn-sm" onclick="c2ApplyFillDown()" id="btnC2ApplyFillDown" disabled>Guardar relleno en Smartsheet</button>
+        </div>
+        <div class="op-range-bar">
+          <span class="op-range-label">Rango de operación:</span>
+          <label class="op-range-field">Fila inicio <input type="number" id="rowStart" value="1" min="1"></label>
+          <label class="op-range-field">Fila fin <input type="number" id="rowEnd" value="" min="1"></label>
+          <button type="button" class="btn-sm" onclick="applyOpRange()">Aplicar rango</button>
+          <span id="opRangeCount" class="filter-count"></span>
+          <button type="button" id="btnLoadComments" class="btn-sm btn-secondary" onclick="loadComments()">Cargar comentarios / Load comments</button>
+        </div>
+
+        <div id="sheetPreviewContent" class="table-wrap"></div>
+        <!-- ═══ PERF: Pagination ═══ -->
+        <div class="sheet-pagination-bar" id="paginationBar" style="display:none;">
+          <button id="btnPrevPage" onclick="changePage(-1)">← Anterior</button>
+          <span id="pageInfo">Página 1</span>
+          <button id="btnNextPage" onclick="changePage(1)">Siguiente →</button>
+          <select id="pageSize" onchange="changePageSize()">
+            <option value="50">50 filas</option>
+            <option value="100" selected>100 filas</option>
+            <option value="250">250 filas</option>
+            <option value="0">Todas</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Code Selection Panel -->
+      <!-- Fill-Down Confirmation / Confirmación de rellenado hacia abajo -->
+      <div id="fillDownPanel" class="panel hidden">
+        <div class="panel-hd">
+          <h3 class="panel-title">Rellenar celdas vacías / Fill empty cells</h3>
+          <div class="hd-actions">
+            <button type="button" onclick="executeFillDown()" id="btnFillDown" class="btn-sm btn-primary">Sí, rellenar / Yes, fill</button>
+            <button type="button" onclick="skipFillDown()" class="btn-sm">Omitir / Skip</button>
+            <button type="button" onclick="hide('fillDownPanel')" class="btn-sm">Cancelar</button>
+          </div>
+        </div>
+        <div id="fillDownContent" class="panel-bd"></div>
+      </div>
+
+      <div id="codeSelectionPanel" class="panel hidden">
+        <div class="panel-hd">
+          <h3 class="panel-title">Seleccionar Filas — Generar Códigos</h3>
+          <div class="hd-actions">
+            <button type="button" onclick="selectAllCodes(true)" class="btn-sm">Seleccionar todo</button>
+            <button type="button" onclick="selectAllCodes(false)" class="btn-sm">Ninguno</button>
+            <button type="button" onclick="applySelectedCodes()" id="btnApplyCodes" class="btn-sm btn-primary">Generar seleccionados</button>
+            <button type="button" onclick="hide('codeSelectionPanel')" class="btn-sm">Cancelar</button>
+          </div>
+        </div>
+        <div id="codeSelectionContent" class="panel-bd"></div>
+      </div>
+
+      <!-- Attachments -->
+      <div id="attachmentsList" class="panel hidden">
+        <div class="panel-hd">
+          <h3 class="panel-title">Archivos Adjuntos</h3>
+        </div>
+        <div id="attachmentsContent" class="panel-bd"></div>
+      </div>
+
+      <!-- Download Result — moved to right sidebar -->
+
+      <!-- Script Output -->
+      <div id="scriptOutput" class="panel hidden">
+        <div class="panel-hd">
+          <h3 class="panel-title">Script Generado</h3>
+          <button type="button" onclick="copyScript()" class="btn-sm">Copiar al portapapeles</button>
+        </div>
+        <pre id="scriptContent" class="code-block"></pre>
+      </div>
+
+      <!-- ═══ PBI Desktop Panel ═══ -->
+      <div id="pbiPanel" class="panel hidden"></div>
+
+      <!-- ═══ S4: Script Runner ═══ -->
+      <div id="scriptRunner" class="panel hidden">
+        <div class="panel-hd">
+          <h3 class="panel-title" id="scriptRunnerTitle">Paso 3 — Procesamiento Territorial</h3>
+          <div class="hd-actions">
+            <span id="scriptRunnerProgress" class="sr-progress-text">0 de 11 completados</span>
+            <button type="button" onclick="hide('scriptRunner')" class="btn-sm">Cerrar</button>
+          </div>
+        </div>
+        <div id="scriptRunnerContent" class="panel-bd"></div>
+      </div>
+
+      <!-- ═══ Cleaning Compare Card (G5) ═══ -->
+      <!-- EN: Before/after stats card for PASO 3 Erase+Append cleaning results -->
+      <!-- ES: Tarjeta de comparación antes/después para los resultados de limpieza del PASO 3 -->
+      <div id="cleaningComparePanel" class="panel hidden">
+        <div class="panel-hd">
+          <h3 class="panel-title">Resultados de Limpieza / Cleaning Results &#8212; Paso 3</h3>
+          <div class="hd-actions">
+            <button type="button" class="btn-sm btn-primary" onclick="saveCleaningStatsManual()"
+              title="Guardar estadísticas ingresadas manualmente / Save manually entered statistics">
+              Guardar / Save
+            </button>
+            <button type="button" class="btn-sm" onclick="loadCleaningStats()"
+              title="Recargar desde servidor / Reload from server">
+              Recargar / Reload
+            </button>
+            <button type="button" class="btn-sm" onclick="hide('cleaningComparePanel')">Cerrar</button>
+          </div>
+        </div>
+        <div class="panel-bd">
+
+          <!-- KPI badges -->
+          <div id="cleaningKpiRow" class="cleaning-kpi-row" style="display:none">
+            <div class="kpi-gauge kpi-yellow" id="cleaningKpiRemoval">
+              <span class="kpi-value" id="cleaningRemovalPct">&#8212;</span>
+              <span class="kpi-label">Tasa de Eliminación / Removal Rate</span>
+            </div>
+            <div class="kpi-gauge kpi-red" id="cleaningKpiAreaDelta">
+              <span class="kpi-value" id="cleaningAreaDelta">&#8212;</span>
+              <span class="kpi-label">Reducción de Área / Area Reduction (ha)</span>
+            </div>
+          </div>
+
+          <!-- Before / After comparison columns -->
+          <div class="cleaning-compare-card">
+            <div class="before-col">
+              <div class="compare-col-hd">Antes / Before</div>
+              <div class="compare-stat">
+                <span class="compare-stat-lbl">Registros / Records</span>
+                <span class="compare-stat-val" id="cleaningBeforeCount">&#8212;</span>
+              </div>
+              <div class="compare-stat">
+                <span class="compare-stat-lbl">Área total / Total Area (ha)</span>
+                <span class="compare-stat-val" id="cleaningBeforeArea">&#8212;</span>
+              </div>
+            </div>
+            <div class="compare-arrow">&#9654;</div>
+            <div class="after-col">
+              <div class="compare-col-hd">Después / After</div>
+              <div class="compare-stat">
+                <span class="compare-stat-lbl">Registros / Records</span>
+                <span class="compare-stat-val" id="cleaningAfterCount">&#8212;</span>
+              </div>
+              <div class="compare-stat">
+                <span class="compare-stat-lbl">Área total / Total Area (ha)</span>
+                <span class="compare-stat-val" id="cleaningAfterArea">&#8212;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual input mode -->
+          <!-- EN: User can type in numbers confirmed in ArcGIS Pro manually -->
+          <!-- ES: El usuario puede ingresar los números confirmados en ArcGIS Pro manualmente -->
+          <details class="cleaning-manual-input" id="cleaningManualDetails">
+            <summary>Ingresar manualmente / Enter manually</summary>
+            <div class="cleaning-manual-grid">
+              <label>Antes &#8212; Registros / Records Before</label>
+              <input type="number" id="manualBeforeCount" min="0" placeholder="0">
+              <label>Antes &#8212; Área (ha) / Area Before (ha)</label>
+              <input type="number" id="manualBeforeArea" min="0" step="0.01" placeholder="0.00">
+              <label>Después &#8212; Registros / Records After</label>
+              <input type="number" id="manualAfterCount" min="0" placeholder="0">
+              <label>Después &#8212; Área (ha) / Area After (ha)</label>
+              <input type="number" id="manualAfterArea" min="0" step="0.01" placeholder="0.00">
+            </div>
+          </details>
+
+          <!-- Removed items table -->
+          <div id="cleaningRemovedSection" style="display:none">
+            <div class="compare-section-title">Elementos Eliminados / Removed Items</div>
+            <table class="cleaning-removed-table">
+              <thead>
+                <tr>
+                  <th>CdgActvdd</th>
+                  <th>Área (ha)</th>
+                  <th>Motivo / Reason</th>
+                </tr>
+              </thead>
+              <tbody id="cleaningRemovedBody"></tbody>
+            </table>
+          </div>
+
+          <div id="cleaningStatsMeta" class="cleaning-meta"></div>
+        </div>
+      </div>
+
+      <!-- Path Settings Panel -->
+      <div id="pathSettingsPanel" class="panel hidden">
+        <div class="panel-hd">
+          <h3 class="panel-title">Rutas Locales — este PC</h3>
+          <div class="hd-actions">
+            <button type="button" onclick="savePathSettings()" class="btn-sm btn-primary" id="btnSavePaths">Guardar en .env</button>
+            <button type="button" onclick="hide('pathSettingsPanel')" class="btn-sm">Cerrar</button>
+          </div>
+        </div>
+        <div class="panel-bd">
+          <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px">Estos valores se guardan en el archivo <code>.env</code> local. No se suben a Git.</p>
+
+          <div class="settings-group">
+            <div class="settings-group-title">📁 Carpetas Smartsheet (OneDrive)</div>
+            <div class="settings-row"><label>FOLDER_C1</label><input type="text" id="ps_FOLDER_C1" placeholder="D:\OneDrive - IUCN\...\C1"></div>
+            <div class="settings-row"><label>FOLDER_C2</label><input type="text" id="ps_FOLDER_C2" placeholder="D:\OneDrive - IUCN\...\C2"></div>
+            <div class="settings-row"><label>FOLDER_C3</label><input type="text" id="ps_FOLDER_C3" placeholder="D:\OneDrive - IUCN\...\C3"></div>
+            <div class="settings-row"><label>SMARTSHEET_DATA_DIR</label><input type="text" id="ps_SMARTSHEET_DATA_DIR" placeholder="D:\OneDrive - IUCN\...\1. Smartsheet data"></div>
+            <div class="settings-row"><label>SMARTSHEET_ATTACH_DIR</label><input type="text" id="ps_SMARTSHEET_ATTACH_DIR" placeholder="D:\OneDrive - IUCN\...\2. Smartsheet attachment"></div>
+            <div class="settings-row"><label>EXCEL_DB_DIR</label><input type="text" id="ps_EXCEL_DB_DIR" placeholder="D:\OneDrive - IUCN\...\0. Database_oficial"></div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-group-title">🗺️ ArcGIS Pro — Proyecto</div>
+            <div class="settings-row"><label>APRX (archivo .aprx)</label><input type="text" id="ps_APRX" placeholder="D:\...\AR_EbA_Area.aprx"></div>
+            <div class="settings-row"><label>WORKSPACE_PATH</label><input type="text" id="ps_WORKSPACE_PATH" placeholder="D:\...\ShapesFinales_C1_xxx"></div>
+            <div class="settings-row"><label>CSVPOINT_TO_GDB</label><input type="text" id="ps_CSVPOINT_TO_GDB" placeholder="D:\...\AR_2025_Q3.gdb"></div>
+            <div class="settings-row"><label>AR_MAP_NAME</label><input type="text" id="ps_AR_MAP_NAME" placeholder="AR_EbA_Area"></div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-group-title">⚙️ ArcGIS Pro — Instalación (auto-detectado por setup.bat)</div>
+            <div class="settings-row">
+              <label>ARCPY_PYTHON</label>
+              <input type="text" id="ps_ARCPY_PYTHON" placeholder="C:\Program Files\ArcGIS\Pro\bin\Python\envs\arcgispro-py3\python.exe">
+            </div>
+            <div class="settings-row"><label>ARCGIS_PRO_VERSION</label><input type="text" id="ps_ARCGIS_PRO_VERSION" placeholder="3.3.0"></div>
+          </div>
+
+          <div id="pathSettingsMsg" style="margin-top:12px;font-size:12px"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ═══ LOG LAYER (inside content-wrap — only spans center content) ═══ -->
+    <div class="log-layer collapsed" id="logLayer">
+      <div class="log-resize-handle" id="logResizeHandle"></div>
+      <div class="log-bar">
+        <div class="log-bar-l" onclick="toggleLog()">
+          <span class="log-bar-title">
+            <span class="log-pulse" id="logPulse"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#94a3b8;flex-shrink:0"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            Log de Operaciones
+          </span>
+          <span class="log-exec-indicator hidden" id="logExecIndicator"><span class="log-exec-spinner"></span> <span class="lang-es">En ejecución</span><span class="lang-en">Running</span></span>
+          <span class="log-badge" id="logCount">0</span>
+        </div>
+        <div class="log-bar-r">
+          <button type="button" class="log-btn" onclick="clearLog(); event.stopPropagation()"><span class="lang-es">Limpiar</span><span class="lang-en">Clear</span></button>
+          <button type="button" class="log-btn log-chevron" id="btnToggleLog"
+            aria-label="Mostrar/ocultar registro" onclick="toggleLog(); event.stopPropagation()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="log-entries" id="log"></div>
+    </div>
+
+    <!-- ═══ Help Modal — inside content-wrap (position:absolute, stays within center panel) ═══ -->
+    <div class="help-modal-overlay" id="helpModalOverlay" onclick="closeHelpModal(event)">
+      <div class="help-modal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
+        <div class="help-modal-hd">
+          <span class="help-modal-title" id="helpModalTitle">Ayuda / Help</span>
+          <button type="button" class="help-modal-close" onclick="closeHelpModal()"
+            data-aria-es="Cerrar" data-aria-en="Close" aria-label="Cerrar">&#x2715;</button>
+        </div>
+        <div class="help-modal-body">
+          <div class="help-modal-lang">
+            <div class="help-modal-lang-badge">ES — Español</div>
+            <div class="help-modal-lang-text" id="helpModalEs"></div>
+          </div>
+          <hr class="help-modal-divider">
+          <div class="help-modal-lang">
+            <div class="help-modal-lang-badge">EN — English</div>
+            <div class="help-modal-lang-text" id="helpModalEn"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content-wrap -->
+
+  <!-- ═══ RIGHT SIDEBAR — Results Panel ═══ -->
+  <aside class="right-sidebar collapsed" id="rightSidebar">
+    <div class="rsb-resize-handle" id="rsbResizeHandle"></div>
+    <!-- Collapsed tab strip (visible when collapsed) -->
+    <div class="rsb-tab-strip" onclick="toggleRightSidebar()">
+      <div class="rsb-tab-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </div>
+      <div class="rsb-tab-label">R</div>
+      <div class="rsb-tab-notif">
+        <span class="rsb-tab-dot" id="rsbTabDot"></span>
+      </div>
+    </div>
+    <!-- Expanded header (visible when open) -->
+    <div class="rsb-header">
+      <div class="rsb-header-left">
+        <span class="rsb-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        </span>
+        <h3 class="rsb-title"><span class="lang-es">Resultados</span><span class="lang-en">Results</span></h3>
+      </div>
+      <button type="button" class="rsb-toggle" id="rightSidebarToggle" onclick="toggleRightSidebar()"
+        data-title-es="Plegar panel" data-title-en="Collapse panel" title="Plegar panel / Collapse panel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="rsb-body" id="rightSidebarBody">
+
+      <!-- Accordion: Diagnóstico AGOL -->
+      <div class="rsb-accordion" id="rsb-diag">
+        <button type="button" class="rsb-accordion-hd" onclick="toggleRsbAccordion('rsb-diag')">
+          <svg class="rsb-accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          <span>Diagnóstico AGOL vs Smartsheet</span>
+          <div class="rsb-accordion-actions">
+            <button type="button" id="btnPaso0Csv" onclick="event.stopPropagation();paso0DownloadCsv()" class="btn-sm"
+              data-help-es="Descargar los resultados del diagnóstico como archivo CSV."
+              data-help-en="Download diagnostic results as a CSV file.">
+              CSV
+            </button>
+          </div>
+        </button>
+        <div class="rsb-accordion-bd">
+          <div class="p0-summary" id="paso0Summary"></div>
+          <div id="paso0CompBar" class="p0-gis-bar" style="display:none"></div>
+          <div id="paso0Groups" class="p0-groups"></div>
+        </div>
+      </div>
+
+      <!-- Accordion: Agente de Procesamiento -->
+      <div class="rsb-accordion collapsed" id="rsb-agent" style="display:none">
+        <button type="button" class="rsb-accordion-hd" onclick="toggleRsbAccordion('rsb-agent')">
+          <svg class="rsb-accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          <span>Agente de Procesamiento / Processing Agent</span>
+          <div class="rsb-accordion-actions">
+            <span id="agentBadge" class="agent-badge">0/0</span>
+          </div>
+        </button>
+        <div class="rsb-accordion-bd">
+          <div id="agentCurrentItem" class="agent-current hidden">
+            Procesando / Processing: <strong id="agentCurrentCode"></strong>
+            <span id="agentCurrentStep" class="agent-step-badge"></span>
+          </div>
+          <div id="agentItemList" class="agent-item-list"></div>
+        </div>
+      </div>
+
+      <!-- Accordion: Resultados de Descarga Batch -->
+      <div class="rsb-accordion" id="rsb-download">
+        <button type="button" class="rsb-accordion-hd" onclick="toggleRsbAccordion('rsb-download')">
+          <svg class="rsb-accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          <span>Resultados de Descarga Batch</span>
+        </button>
+        <div class="rsb-accordion-bd">
+          <div id="downloadResult" class="rsb-content hidden">
+            <div id="downloadContent"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="rsb-empty" class="rsb-empty">
+        <span>Sin resultados aún.</span>
+        <span>No results yet.</span>
+      </div>
+    </div>
+  </aside>
+
+</div><!-- /shell -->
+
+<!-- ═══ Diagnose Busy Banner ═══ -->
+<!-- ES: Aviso mientras el diagnóstico AGOL está en ejecución / EN: Warning while AGOL diagnostic is running -->
+<div class="diag-busy-banner" id="diagBusyBanner" style="display:none;">
+  <span class="diag-busy-icon">&#x26A0;</span>
+  <span>
+    Diagnóstico en ejecución — no inicie operaciones de shapefile ni descargas.
+    Cargar y revisar la hoja es seguro.
+    / Diagnostic running — do not start shapefile or download operations.
+    Loading and reviewing the sheet is safe.
+  </span>
+</div>
+
+
+<!-- ═══ Drill-down Modal — M&E Discrepancy Detail ═══ -->
+<!-- ES: Modal de detalle de discrepancia M&E / EN: M&E discrepancy drill-down modal -->
+<div class="drill-modal-overlay" id="drillModalOverlay" onclick="cmpCloseDrillModal(event)">
+  <div class="drill-modal" role="dialog" aria-modal="true" aria-labelledby="drillModalTitle">
+    <div class="drill-modal-hd">
+      <span class="drill-modal-title" id="drillModalTitle">Discrepancias / Discrepancies</span>
+      <button type="button" class="help-modal-close" onclick="cmpCloseDrillModal()" aria-label="Cerrar">&#x2715;</button>
+    </div>
+    <div class="drill-modal-body" id="drillModalBody">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- AbE Fix Dialog / Diálogo de corrección AbE -->
+<div class="abe-fix-overlay" id="abeFixOverlay" onclick="closeAbeFixDialog(event)">
+  <div class="abe-fix-dialog" role="dialog" aria-modal="true" aria-labelledby="abeFixTitle">
+    <div class="abe-fix-hd">
+      <span id="abeFixTitle">Corregir valor AbE / Fix AbE value</span>
+      <button type="button" class="abe-fix-close" onclick="closeAbeFixDialog()" aria-label="Cerrar">&#x2715;</button>
+    </div>
+    <div class="abe-fix-body">
+      <p class="abe-fix-current-label">Valor actual en Smartsheet / Current value in Smartsheet:</p>
+      <p class="abe-fix-current-val" id="abeFixCurrentVal"></p>
+      <p class="abe-fix-select-label" id="abeFixSelectLabel">Seleccione el valor correcto / Select the correct value:</p>
+      <div id="abeFixOptions"></div>
+    </div>
+    <div class="abe-fix-ft">
+      <button type="button" class="abe-fix-confirm-btn" id="abeFixConfirmBtn" onclick="confirmAbeFixDialog()">Corregir en Smartsheet</button>
+      <button type="button" class="abe-fix-cancel-btn" onclick="closeAbeFixDialog()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- AbE Error Info Dialog / Diálogo de error AbE -->
+<div class="abe-fix-overlay" id="abeErrorOverlay" onclick="closeAbeErrorDialog(event)">
+  <div class="abe-fix-dialog abe-error-dialog" role="dialog" aria-modal="true" aria-labelledby="abeErrorTitle">
+    <div class="abe-fix-hd abe-error-hd">
+      <span id="abeErrorTitle">Valor AbE no reconocido / Unrecognised AbE value</span>
+      <button type="button" class="abe-fix-close" onclick="closeAbeErrorDialog()" aria-label="Cerrar">&#x2715;</button>
+    </div>
+    <div class="abe-fix-body">
+      <p class="abe-fix-current-label">Valor en Smartsheet / Value in Smartsheet:</p>
+      <p class="abe-error-current-val" id="abeErrorCurrentVal"></p>
+      <p class="abe-error-explain">
+        Este valor no es un AbE válido y debe corregirse manualmente en Smartsheet.<br>
+        This value is not a valid AbE and must be manually corrected in Smartsheet.
+      </p>
+      <p class="abe-fix-select-label">Códigos de actividad afectados / Affected activity codes:</p>
+      <div id="abeErrorCodeList"></div>
+    </div>
+    <div class="abe-fix-ft">
+      <button type="button" class="abe-fix-cancel-btn" onclick="closeAbeErrorDialog()">Cerrar / Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

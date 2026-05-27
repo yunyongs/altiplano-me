@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manual de Operación — Altiplano Resiliente · Actualizador de Mapa</title>
+<style>
+  /* ════ Libro de Marca Altiplano Resiliente ════ */
+  :root{
+    --ar-green:#70b62c; --ar-blue:#003f6e;
+    --ar-green-light:#e8f5e0; --ar-blue-light:#e0ecf5;
+    --ar-green-dark:#4a8c1a; --ar-blue-dark:#002d4f;
+    --ink:#1f2937; --muted:#5b6b7b; --line:#d7dee6; --bg:#f4f7fa;
+    --shadow:0 2px 10px rgba(0,32,60,.08);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+    color:var(--ink); background:var(--bg); line-height:1.6; font-size:16px;
+  }
+  /* ── Layout ── */
+  .layout{display:flex; min-height:100vh}
+  nav.toc{
+    position:sticky; top:0; align-self:flex-start; height:100vh; overflow-y:auto;
+    width:280px; flex-shrink:0; background:var(--ar-blue-dark); color:#cfe0ee;
+    padding:0 0 40px;
+  }
+  nav.toc .toc-brand{
+    display:flex; align-items:center; gap:12px; padding:22px 22px 18px;
+    border-bottom:1px solid rgba(255,255,255,.12); margin-bottom:10px;
+  }
+  nav.toc .toc-brand .logo{
+    width:42px;height:42px;border-radius:9px;background:var(--ar-green);
+    display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:18px;
+    flex-shrink:0;
+  }
+  nav.toc .toc-brand .t1{font-weight:700;color:#fff;font-size:17px;line-height:1.1}
+  nav.toc .toc-brand .t2{font-size:12px;color:var(--ar-green);letter-spacing:.5px}
+  nav.toc a{
+    display:block; color:#cfe0ee; text-decoration:none; padding:7px 22px;
+    font-size:14px; border-left:3px solid transparent;
+  }
+  nav.toc a:hover{background:rgba(255,255,255,.06); color:#fff}
+  nav.toc a.sec{margin-top:14px; font-size:11px; letter-spacing:1px; color:#7fa6c7;
+    text-transform:uppercase; pointer-events:none; padding-bottom:2px}
+  main{flex:1; max-width:980px; margin:0 auto; padding:0 48px 120px}
+
+  /* ── Hero ── */
+  header.hero{
+    background:linear-gradient(135deg,var(--ar-blue) 0%,var(--ar-blue-dark) 100%);
+    color:#fff; padding:54px 48px 48px; margin:0 -48px 40px;
+  }
+  header.hero .kicker{color:var(--ar-green); font-weight:700; letter-spacing:2px;
+    font-size:13px; text-transform:uppercase}
+  header.hero h1{margin:8px 0 6px; font-size:34px; line-height:1.15}
+  header.hero p{margin:0; color:#bcd2e6; font-size:17px; max-width:680px}
+  header.hero .meta{margin-top:22px; display:flex; gap:10px; flex-wrap:wrap}
+  header.hero .meta span{
+    background:rgba(255,255,255,.12); padding:6px 13px; border-radius:20px;
+    font-size:13px; color:#e3eef7;
+  }
+
+  /* ── Sections ── */
+  section{padding-top:28px; margin-top:10px}
+  h2{color:var(--ar-blue); font-size:26px; border-bottom:3px solid var(--ar-green);
+    padding-bottom:8px; margin:38px 0 18px}
+  h3{color:var(--ar-blue-dark); font-size:20px; margin:26px 0 10px}
+  h4{color:var(--ar-blue-dark); font-size:16px; margin:18px 0 6px}
+  p{margin:10px 0}
+  code{background:var(--ar-blue-light); color:var(--ar-blue-dark);
+    padding:1px 6px; border-radius:4px; font-size:.9em; font-family:Consolas,Menlo,monospace}
+
+  /* ── Figures ── */
+  figure{margin:18px 0; border:1px solid var(--line); border-radius:10px;
+    overflow:hidden; box-shadow:var(--shadow); background:#fff}
+  figure img{width:100%; display:block}
+  figure figcaption{padding:10px 14px; font-size:13px; color:var(--muted);
+    background:#fbfdff; border-top:1px solid var(--line)}
+  figure figcaption b{color:var(--ar-blue-dark)}
+  figure.compact{max-width:520px}
+
+  /* ── Step cards ── */
+  .step{display:flex; gap:16px; margin:16px 0; padding:16px 18px;
+    background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:var(--shadow)}
+  .step .num{flex-shrink:0; width:34px; height:34px; border-radius:50%;
+    background:var(--ar-green); color:#fff; font-weight:700; display:flex;
+    align-items:center; justify-content:center; font-size:16px}
+  .step .body{flex:1}
+  .step .body h4{margin:2px 0 4px}
+  .step .body p{margin:4px 0}
+
+  /* ── Callouts ── */
+  .note,.warn,.tip{border-radius:10px; padding:14px 18px; margin:18px 0;
+    border-left:5px solid; font-size:15px}
+  .note{background:var(--ar-blue-light); border-color:var(--ar-blue)}
+  .tip{background:var(--ar-green-light); border-color:var(--ar-green)}
+  .warn{background:#fff4e5; border-color:#e8920c}
+  .note strong,.tip strong,.warn strong{display:block; margin-bottom:3px}
+  .note strong{color:var(--ar-blue)} .tip strong{color:var(--ar-green-dark)}
+  .warn strong{color:#b66a00}
+
+  /* ── Tables ── */
+  table.tbl{width:100%; border-collapse:collapse; margin:16px 0; font-size:14px;
+    background:#fff; box-shadow:var(--shadow); border-radius:10px; overflow:hidden}
+  table.tbl th{background:var(--ar-blue); color:#fff; text-align:left;
+    padding:10px 13px; font-weight:600}
+  table.tbl td{padding:9px 13px; border-top:1px solid var(--line); vertical-align:top}
+  table.tbl tr:nth-child(even) td{background:#fafcfe}
+
+  /* ── Pills / buttons reference ── */
+  .btn-ref{display:inline-block; padding:3px 12px; border-radius:6px; font-size:13px;
+    font-weight:600; margin:2px}
+  .btn-green{background:var(--ar-green); color:#fff}
+  .btn-blue{background:var(--ar-blue); color:#fff}
+  .btn-ghost{background:#fff; color:var(--ar-blue); border:1px solid var(--ar-blue)}
+
+  .pipeline{display:flex; flex-wrap:wrap; gap:8px; margin:16px 0}
+  .pipeline .pstep{flex:1; min-width:120px; background:#fff; border:1px solid var(--line);
+    border-radius:10px; padding:12px; box-shadow:var(--shadow)}
+  .pipeline .pstep .pn{font-size:12px; font-weight:700; color:var(--ar-green-dark)}
+  .pipeline .pstep .pt{font-size:14px; color:var(--ar-blue-dark); font-weight:600; margin-top:2px}
+  .pipeline .pstep .pd{font-size:12px; color:var(--muted); margin-top:4px}
+
+  footer{margin-top:60px; padding-top:24px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px}
+
+  /* ── Print / PDF ── */
+  @media print{
+    nav.toc{display:none}
+    main{max-width:100%; padding:0 10px}
+    header.hero{margin:0 0 20px; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+    figure,.step,.note,.warn,.tip,table.tbl{break-inside:avoid; box-shadow:none}
+    h2{break-after:avoid}
+    body{font-size:12px}
+    .no-print{display:none}
+  }
+  @media (max-width:880px){
+    nav.toc{display:none}
+    main{padding:0 18px 80px}
+    header.hero{margin:0 -18px 28px; padding:36px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ════════════ ÍNDICE LATERAL ════════════ -->
+  <nav class="toc">
+    <div class="toc-brand">
+      <div class="logo">AR</div>
+      <div>
+        <div class="t1">Altiplano</div>
+        <div class="t2">RESILIENTE</div>
+      </div>
+    </div>
+    <a class="sec">Empezar</a>
+    <a href="#intro">1. ¿Qué es este sistema?</a>
+    <a href="#abrir">2. Cómo abrir el tablero</a>
+    <a href="#pantalla">3. Conocer la pantalla</a>
+    <a href="#modos">4. Asistente o Avanzado</a>
+    <a class="sec">Antes de trabajar</a>
+    <a href="#config">5. Configuración</a>
+    <a href="#rutas">6. Rutas locales del PC</a>
+    <a href="#agol">7. Conectar a ArcGIS Online</a>
+    <a class="sec">Flujo de trabajo</a>
+    <a href="#diagnostico">8. Paso 1-a · Diagnóstico</a>
+    <a href="#paso1">9. Paso 1 · Smartsheet</a>
+    <a href="#paso1b">10. Paso 1b · Descargar SHP</a>
+    <a href="#paso3">11. Paso 3 · ArcPy</a>
+    <a href="#paso4">12. Paso 4 · AGOL</a>
+    <a href="#paso5">13. Paso 5 · Excel + M&amp;E</a>
+    <a href="#paso6">14. Paso 6 · Power BI</a>
+    <a href="#paso7">15. Paso 7 · Reportes</a>
+    <a href="#orq">16. Orquestador</a>
+    <a class="sec">Ayuda</a>
+    <a href="#asistente">17. Modo Asistente paso a paso</a>
+    <a href="#reglas">18. Reglas importantes</a>
+    <a href="#problemas">19. Problemas frecuentes</a>
+  </nav>
+
+  <!-- ════════════ CONTENIDO ════════════ -->
+  <main>
+    <header class="hero">
+      <div class="kicker">Manual de Operación</div>
+      <h1>Actualizador de Mapa · Altiplano Resiliente</h1>
+      <p>Guía para la persona operadora. Explica, con capturas reales de pantalla,
+         cómo usar el tablero web para la actualización trimestral del mapa,
+         de principio a fin.</p>
+      <div class="meta">
+        <span>Proyecto IUCN / GEF</span>
+        <span>Tablero web en el navegador</span>
+        <span>Bilingüe ES / EN</span>
+        <span>No requiere experiencia técnica</span>
+      </div>
+    </header>
+
+    <!-- ───────────── 1. INTRO ───────────── -->
+    <section id="intro">
+      <h2>1. ¿Qué es este sistema?</h2>
+      <p>El <strong>Actualizador de Mapa</strong> es un tablero que se abre en su navegador
+         (Chrome, Edge o Firefox). Sirve para hacer, cada trimestre, la actualización del
+         mapa del proyecto sin tener que recordar comandos ni pasos técnicos: el sistema
+         le guía y prepara casi todo automáticamente.</p>
+      <p>El trabajo conecta cuatro herramientas. El tablero es el <em>intermediario</em>
+         que las une:</p>
+      <div class="pipeline">
+        <div class="pstep"><div class="pn">ORIGEN</div><div class="pt">Smartsheet</div><div class="pd">Datos que reporta el campo</div></div>
+        <div class="pstep"><div class="pn">SIG LOCAL</div><div class="pt">ArcGIS Pro</div><div class="pd">Procesamiento del mapa</div></div>
+        <div class="pstep"><div class="pn">PUBLICACIÓN</div><div class="pt">ArcGIS Online</div><div class="pd">Capas en la nube</div></div>
+        <div class="pstep"><div class="pn">REPORTE</div><div class="pt">Power BI</div><div class="pd">Tablero de indicadores</div></div>
+      </div>
+      <div class="tip">
+        <strong>Lo importante</strong>
+        Usted no programa nada. Hace clic en botones, revisa resultados y, cuando el
+        sistema lo pide, pega un texto (un “script”) dentro de ArcGIS Pro. El tablero
+        genera ese texto por usted.
+      </div>
+    </section>
+
+    <!-- ───────────── 2. ABRIR ───────────── -->
+    <section id="abrir">
+      <h2>2. Cómo abrir el tablero</h2>
+      <div class="step"><div class="num">1</div><div class="body">
+        <h4>Inicie el programa</h4>
+        <p>En la carpeta del proyecto, haga doble clic en <code>run.bat</code>.
+           Se abrirá una ventana negra (la “consola”). <strong>No la cierre</strong>
+           mientras trabaja: es el motor del tablero.</p>
+      </div></div>
+      <div class="step"><div class="num">2</div><div class="body">
+        <h4>Abra el navegador</h4>
+        <p>Vaya a la dirección <code>http://localhost:5000</code>. Aparecerá el tablero.</p>
+      </div></div>
+      <div class="step"><div class="num">3</div><div class="body">
+        <h4>Al terminar</h4>
+        <p>Cierre la pestaña del navegador y luego cierre la ventana negra
+           (o presione <code>Ctrl + C</code> dentro de ella).</p>
+      </div></div>
+      <div class="note">
+        <strong>Nota</strong>
+        El tablero funciona solo en este computador (<code>localhost</code>). Nadie de
+        fuera puede verlo. Es seguro.
+      </div>
+    </section>
+
+    <!-- ───────────── 3. PANTALLA ───────────── -->
+    <section id="pantalla">
+      <h2>3. Conocer la pantalla</h2>
+      <p>Al abrir el tablero verá tres zonas principales: el <strong>menú izquierdo</strong>,
+         la <strong>vista central</strong> y el <strong>panel de resultados</strong> a la derecha.</p>
+      <figure>
+        <img src="img/01_dashboard_full.png" alt="Vista completa del tablero">
+        <figcaption><b>Vista completa del tablero.</b> Izquierda: menú de configuración y pasos.
+          Centro: barra superior, progreso del pipeline y área de trabajo. Derecha: resultados.
+          Abajo: <em>Log de Operaciones</em>.</figcaption>
+      </figure>
+
+      <h3>3.1 Menú izquierdo (barra lateral)</h3>
+      <p>Contiene la <strong>Configuración</strong> arriba y luego cada paso del flujo de trabajo
+         (Paso 1 a Paso 7) más el Orquestador. Cada paso tiene sus propios botones.</p>
+      <figure class="compact">
+        <img src="img/02_sidebar.png" alt="Barra lateral">
+        <figcaption><b>Barra lateral.</b> Seleccione aquí el trimestre, el componente y la
+          carpeta de trabajo; debajo están los botones de cada paso.</figcaption>
+      </figure>
+
+      <h3>3.2 Barra superior</h3>
+      <figure>
+        <img src="img/03_topbar.png" alt="Barra superior">
+        <figcaption><b>Barra superior.</b> Muestra la hoja cargada, el cambio entre
+          <span class="btn-ref btn-ghost">Asistente</span> y <span class="btn-ref btn-ghost">Avanzado</span>,
+          el botón <span class="btn-ref btn-ghost">Simulación</span>, el idioma
+          <span class="btn-ref btn-green">ES</span>/<span class="btn-ref btn-ghost">EN</span> y los iconos de
+          descargar registro y mostrar resultados.</figcaption>
+      </figure>
+      <div class="tip">
+        <strong>Idioma</strong>
+        Puede cambiar entre español (ES) e inglés (EN) en cualquier momento con el botón
+        de idioma. La elección se recuerda.
+      </div>
+
+      <h3>3.3 Panel de resultados (derecha)</h3>
+      <p>Aquí aparecen los resultados del diagnóstico, la cola de trabajo del agente y los
+         resultados de descarga. Si está cerrado, ábralo con el icono de la derecha de la barra superior.</p>
+      <figure class="compact">
+        <img src="img/21_right_results.png" alt="Panel de resultados">
+        <figcaption><b>Panel de resultados.</b> Tres secciones plegables: Diagnóstico AGOL,
+          Agente de Procesamiento y Resultados de Descarga Batch.</figcaption>
+      </figure>
+
+      <h3>3.4 Log de Operaciones (abajo)</h3>
+      <p>La franja negra inferior registra todo lo que hace el sistema. Si algo sale mal,
+         ahí verá el mensaje. Puede ampliarla, limpiarla o descargarla.</p>
+    </section>
+
+    <!-- ───────────── 4. MODOS ───────────── -->
+    <section id="modos">
+      <h2>4. Asistente o Avanzado</h2>
+      <p>El tablero tiene dos formas de trabajar. Elija con los botones de la barra superior.</p>
+      <table class="tbl">
+        <tr><th>Modo</th><th>Para quién</th><th>Cómo funciona</th></tr>
+        <tr>
+          <td><span class="btn-ref btn-ghost">Asistente</span></td>
+          <td>Recomendado al inicio</td>
+          <td>Le guía paso por paso, una pantalla a la vez, con explicaciones. Ideal para
+              aprender o para no olvidar ningún paso.</td>
+        </tr>
+        <tr>
+          <td><span class="btn-ref btn-ghost">Avanzado</span></td>
+          <td>Cuando ya tiene práctica</td>
+          <td>Muestra todos los botones a la vez en la barra lateral. Más rápido para quien
+              ya conoce el flujo.</td>
+        </tr>
+      </table>
+      <div class="warn">
+        <strong>Modo Simulación</strong>
+        El botón <span class="btn-ref btn-ghost">Simulación</span> permite practicar sin
+        modificar datos reales. Úselo para entrenar. Cuando esté activo, verá un aviso amarillo.
+      </div>
+    </section>
+
+    <!-- ───────────── 5. CONFIGURACIÓN ───────────── -->
+    <section id="config">
+      <h2>5. Configuración (antes de empezar)</h2>
+      <p>Antes de cualquier paso, confirme tres cosas en la parte superior de la barra lateral
+         o en la vista <strong>Configuración</strong>.</p>
+      <figure>
+        <img src="img/22_path_settings.png" alt="Vista de configuración">
+        <figcaption><b>Vista de Configuración.</b> Verifique que <em>Token</em> diga
+          <strong style="color:#4a8c1a">Conectado</strong> (verde). Elija el
+          <em>Trimestre de trabajo</em>, el <em>Componente</em> y la <em>Carpeta de destino</em>.</figcaption>
+      </figure>
+      <div class="step"><div class="num">1</div><div class="body">
+        <h4>Trimestre de trabajo</h4>
+        <p>Seleccione siempre el trimestre <strong>primero</strong>. Define los grupos de
+           ArcGIS Pro (por ejemplo <code>2026_Q1</code>, <code>2026_Q1_point</code>,
+           <code>2026_Q1_polygon</code>) donde se ubicarán los shapefiles.</p>
+      </div></div>
+      <div class="step"><div class="num">2</div><div class="body">
+        <h4>Componente</h4>
+        <p>Elija <code>C1</code> (principal), <code>C2</code> (donaciones) o <code>C3</code>
+           según la hoja que vaya a trabajar.</p>
+      </div></div>
+      <div class="step"><div class="num">3</div><div class="body">
+        <h4>Carpeta de trabajo</h4>
+        <p>Por defecto usa la ruta automática, que apunta a su <strong>OneDrive de IUCN</strong>
+           (la carpeta del componente seleccionado). Solo cámbiela a <em>Manual</em> si
+           necesita otra carpeta. Vea la sección <a href="#rutas">6</a> para más detalle.</p>
+      </div></div>
+      <div class="note">
+        <strong>Token en rojo</strong>
+        Si <em>Token</em> aparece en rojo o dice que no hay conexión, contacte al
+        administrador del sistema. Sin token no se puede leer Smartsheet.
+      </div>
+    </section>
+
+    <!-- ───────────── 6. RUTAS ───────────── -->
+    <section id="rutas">
+      <h2>6. Rutas locales del PC (OneDrive de IUCN)</h2>
+      <p>Todos los archivos del sistema (descargas, datos de Smartsheet, geodatabase y
+         proyecto de ArcGIS Pro) viven dentro de su <strong>OneDrive de IUCN</strong>: la
+         carpeta <code>OneDrive - IUCN…</code> que aparece bajo su usuario de Windows.</p>
+      <div class="tip">
+        <strong>¿Por qué OneDrive de IUCN?</strong>
+        Cada computador monta OneDrive en una letra de unidad distinta
+        (<code>E:</code>, <code>C:</code>, <code>D:</code>…). El sistema detecta
+        automáticamente su carpeta <code>OneDrive - IUCN…</code> y arma las rutas a partir
+        de ella. Así, la misma configuración funciona en cualquier PC del equipo sin
+        reescribir las rutas. En el archivo <code>.env</code> esto se ve como el marcador
+        <code>${ONEDRIVE_IUCN}</code>.
+      </div>
+      <p>El botón <span class="btn-ref btn-ghost">Rutas Locales (este PC)</span> (en la vista
+         <em>Configuración</em>) abre una ventana donde se ven y ajustan esas carpetas. Estos
+         valores se guardan en el archivo <code>.env</code> local y <strong>nunca</strong> se
+         suben a internet.</p>
+      <table class="tbl">
+        <tr><th>Grupo</th><th>Qué configura</th></tr>
+        <tr><td>📁 Carpetas Smartsheet</td><td>Dónde se descargan los archivos de cada componente (C1, C2, C3), dentro de OneDrive de IUCN.</td></tr>
+        <tr><td>🗺️ ArcGIS Pro — Proyecto</td><td>Ruta del archivo <code>.aprx</code>, la geodatabase y el nombre del mapa (también en OneDrive de IUCN).</td></tr>
+        <tr><td>⚙️ ArcGIS Pro — Instalación</td><td>Se detecta automáticamente al instalar; rara vez se toca.</td></tr>
+      </table>
+      <div class="warn">
+        <strong>Requisito</strong>
+        Tenga OneDrive de IUCN <strong>iniciado y sincronizado</strong> en este PC. Si el
+        sistema no encuentra la carpeta <code>OneDrive - IUCN…</code>, las rutas quedarán sin
+        resolver y las descargas fallarán.
+      </div>
+    </section>
+
+    <!-- ───────────── 7. AGOL ───────────── -->
+    <section id="agol">
+      <h2>7. Conectar a ArcGIS Online (AGOL)</h2>
+      <p>Para el diagnóstico (Paso 1-a) y la publicación (Paso 4) hay que iniciar sesión en
+         ArcGIS Online. Es seguro: el sistema usa una ventana oficial de inicio de sesión y
+         <strong>no guarda su contraseña</strong>.</p>
+      <figure class="compact">
+        <img src="img/20_agol_connect.png" alt="Panel de conexión AGOL">
+        <figcaption><b>Panel Diagnóstico AGOL.</b> Confirme la <em>URL de Organización</em>
+          y pulse <span class="btn-ref btn-green">Conectar AGOL</span>.</figcaption>
+      </figure>
+      <div class="step"><div class="num">1</div><div class="body">
+        <h4>Abrir el panel</h4>
+        <p>En la barra lateral, dentro de <em>Paso 1</em>, abra <strong>Diagnóstico AGOL</strong>.</p>
+      </div></div>
+      <div class="step"><div class="num">2</div><div class="body">
+        <h4>Conectar</h4>
+        <p>Verifique la URL de su organización y pulse
+           <span class="btn-ref btn-green">Conectar AGOL</span>. Se abrirá el inicio de
+           sesión en el navegador.</p>
+      </div></div>
+      <div class="step"><div class="num">3</div><div class="body">
+        <h4>Sesión activa</h4>
+        <p>Una vez conectado, el panel muestra su usuario y organización. La sesión dura
+           hasta 60 minutos y se renueva sola. Si caduca, un clic basta para reconectar.</p>
+      </div></div>
+    </section>
+
+    <!-- ───────────── 8. DIAGNÓSTICO ───────────── -->
+    <section id="diagnostico">
+      <h2>8. Paso 1-a · Diagnóstico AGOL vs Smartsheet</h2>
+      <p>Este es el verdadero <strong>punto de partida</strong> del trabajo diario. Compara lo
+         que está publicado en ArcGIS Online con lo que reporta Smartsheet, y le dice qué
+         actividades coinciden, cuáles tienen diferencias y cuáles son nuevas.</p>
+      <figure>
+        <img src="img/11_paso1.png" alt="Paso 1 con panel de diagnóstico">
+        <figcaption><b>Paso 1 con el panel de resultados.</b> El diagnóstico produce una
+          <em>cola de trabajo</em> a la derecha. Cada fila es una actividad por resolver.</figcaption>
+      </figure>
+      <h3>8.1 Cómo ejecutarlo</h3>
+      <div class="step"><div class="num">1</div><div class="body"><h4>Seleccione el componente</h4><p>En la barra lateral (por ejemplo C2).</p></div></div>
+      <div class="step"><div class="num">2</div><div class="body"><h4>Cargue la vista previa</h4><p>Pulse <span class="btn-ref btn-green">Cargar Vista Previa</span>.</p></div></div>
+      <div class="step"><div class="num">3</div><div class="body"><h4>Si es C2, elija PPD o PMD</h4><p>En el filtro <em>Tipo</em>, escoja el subconjunto que va a trabajar.</p></div></div>
+      <div class="step"><div class="num">4</div><div class="body"><h4>Conecte AGOL y diagnostique</h4><p>Pulse <span class="btn-ref btn-blue">Diagnosticar AGOL vs SS</span>.</p></div></div>
+      <div class="step"><div class="num">5</div><div class="body"><h4>Revise los resultados</h4><p>En el panel derecho aparecen tres grupos: <em>coinciden</em>, <em>con diferencia</em> y <em>nuevas</em>.</p></div></div>
+      <div class="warn">
+        <strong>Mientras el diagnóstico corre</strong>
+        Verá un aviso amarillo arriba. No inicie descargas ni operaciones de shapefile hasta
+        que termine. Cargar y revisar la hoja sí es seguro.
+      </div>
+      <h3>8.2 La cola de trabajo</h3>
+      <p>Cada fila del diagnóstico es un <strong>ítem de trabajo</strong> con una casilla.
+         Marque la casilla <strong>solo</strong> cuando esa actividad ya esté lista, es decir:</p>
+      <ul>
+        <li>el archivo fue subido a ArcGIS Pro, y</li>
+        <li>el <code>CÓDIGO DE LA ACTIVIDAD</code> quedó correctamente insertado.</li>
+      </ul>
+      <p>El orden no importa: puede subir primero y luego poner el código, o al revés.</p>
+    </section>
+
+    <!-- ───────────── 9. PASO 1 ───────────── -->
+    <section id="paso1">
+      <h2>9. Paso 1 · Smartsheet</h2>
+      <p>Aquí revisa y prepara los datos de la hoja. Los botones están en la barra lateral,
+         bajo <em>Paso 1 — Smartsheet</em>.</p>
+      <table class="tbl">
+        <tr><th>Botón</th><th>Qué hace</th></tr>
+        <tr><td><span class="btn-ref btn-green">Cargar Vista Previa</span></td><td>Muestra la hoja en una tabla con filtros.</td></tr>
+        <tr><td><span class="btn-ref btn-ghost">Cargar comentarios</span></td><td>Trae los comentarios de las filas visibles.</td></tr>
+        <tr><td><span class="btn-ref btn-ghost">Generar Códigos Faltantes</span></td><td>Crea un código único para cada actividad con fecha pero sin código.</td></tr>
+        <tr><td><span class="btn-ref btn-ghost">Corregir Fechas</span></td><td>Arregla fechas guardadas como texto en formato incorrecto.</td></tr>
+        <tr><td><span class="btn-ref btn-ghost">Actualizar Revisión (SHP)</span></td><td>Marca la <em>Calidad SIG</em> solo en filas con datos de hectáreas.</td></tr>
+      </table>
+      <h3>9.1 Vista previa y filtros</h3>
+      <p>La tabla no es solo de lectura: sirve para <strong>localizar una actividad exacta</strong>
+         mientras revisa el diagnóstico. Use los filtros (Tipo, Contrato, Trimestre, Hectáreas,
+         Calidad SIG, Código, Sin código, Con shapefile, Fecha errónea) para aislar cada caso.</p>
+      <div class="warn">
+        <strong>Regla de oro: el CÓDIGO no se borra</strong>
+        Una vez asignado un <code>CÓDIGO DE LA ACTIVIDAD</code>, el sistema nunca lo modifica ni
+        lo elimina. Solo usted puede cambiarlo manualmente. Es una regla de integridad de datos.
+      </div>
+    </section>
+
+    <!-- ───────────── 10. PASO 1b ───────────── -->
+    <section id="paso1b">
+      <h2>10. Paso 1b · Descargar y validar shapefiles</h2>
+      <p>Estas funciones están en la barra lateral dentro de <em>Paso 2 — SHP ↔ ArcGIS</em>,
+         con dos modos: <strong>Agent</strong> (automático) y <strong>Manual</strong>.</p>
+      <figure>
+        <img src="img/12_paso2.png" alt="Paso 2 / 1b SHP ArcGIS">
+        <figcaption><b>Paso de shapefiles.</b> El <em>Agente</em> recorre la cola de trabajo
+          automáticamente; el modo <em>Manual</em> permite listar adjuntos y descargar por lotes.</figcaption>
+      </figure>
+      <h3>10.1 Modo Agente (recomendado)</h3>
+      <p>El agente toma la cola del diagnóstico y procesa cada shapefile uno por uno. Use los
+         controles <span class="btn-ref btn-green">Iniciar Agente</span>, <em>Pausar</em>,
+         <em>Reanudar</em>, <em>Saltar</em> y <em>Cancelar</em>. El avance se ve en la barra
+         de progreso del centro y en el panel derecho.</p>
+      <h3>10.2 Modo Manual</h3>
+      <ul>
+        <li><span class="btn-ref btn-ghost">Listar Adjuntos</span> — ver qué archivos hay.</li>
+        <li><span class="btn-ref btn-ghost">Descarga Batch + Validar</span> — descargar todos los ZIP y validar que sean shapefiles correctos.</li>
+      </ul>
+      <div class="tip">
+        <strong>Sin shapefile, hay alternativa</strong>
+        Si una fila no trae shapefile, el sistema puede descargar el Excel de áreas y convertirlo
+        en puntos automáticamente (fallback Excel → puntos).
+      </div>
+    </section>
+
+    <!-- ───────────── 11. PASO 3 ───────────── -->
+    <section id="paso3">
+      <h2>11. Paso 3 · Procesamiento territorial (ArcPy)</h2>
+      <p>Aquí el sistema <strong>genera scripts</strong> que usted copia y pega en la ventana
+         Python de ArcGIS Pro. Usted no escribe código: solo copia, pega y ejecuta en ArcGIS Pro.</p>
+      <figure>
+        <img src="img/13_paso3_zoom.png" alt="Paso 3 ArcPy">
+        <figcaption><b>Paso 3.</b> Use <span class="btn-ref btn-green">Procesamiento Guiado</span>
+          para seguir la secuencia, o los <em>Scripts individuales</em> (3a Merge, 3b Overlap,
+          3d Erase, 3j Excel, etc.). También gestiona los <em>Criterios de Limpieza</em>.</figcaption>
+      </figure>
+      <div class="step"><div class="num">1</div><div class="body"><h4>Generar</h4><p>Pulse el botón del script que necesita. El texto aparece en el área <em>Script Generado</em>.</p></div></div>
+      <div class="step"><div class="num">2</div><div class="body"><h4>Copiar</h4><p>Use <span class="btn-ref btn-ghost">Copiar al portapapeles</span>.</p></div></div>
+      <div class="step"><div class="num">3</div><div class="body"><h4>Pegar en ArcGIS Pro</h4><p>En la ventana Python de ArcGIS Pro, pegue y ejecute.</p></div></div>
+      <div class="tip">
+        <strong>Ver Resultados de Limpieza</strong>
+        Después de Erase/Append, use <span class="btn-ref btn-ghost">Ver Resultados Limpieza</span>
+        para comparar antes/después (registros y hectáreas) y registrar los criterios aplicados.
+      </div>
+    </section>
+
+    <!-- ───────────── 12. PASO 4 ───────────── -->
+    <section id="paso4">
+      <h2>12. Paso 4 · Publicación en ArcGIS Online (AGOL)</h2>
+      <p>Publica las capas actualizadas en la nube y verifica que coincidan tres fuentes.</p>
+      <figure>
+        <img src="img/14_paso4_zoom.png" alt="Paso 4 AGOL">
+        <figcaption><b>Paso 4.</b> <span class="btn-ref btn-green">Publicación Guiada</span>,
+          scripts individuales (4a WFL Punto, 4b WFL Polígono, 4c Exportar SHP) y la
+          <em>Verificación 3 Fuentes</em>.</figcaption>
+      </figure>
+      <h3>12.1 Verificación de 3 fuentes</h3>
+      <p>Compara <strong>Smartsheet</strong> (la verdad absoluta) contra el GIS local y AGOL.
+         Pulse <span class="btn-ref btn-ghost">Verificar SS vs GIS</span> o genere el
+         <span class="btn-ref btn-ghost">Script 3 Fuentes</span> para correrlo en ArcGIS Pro.</p>
+      <div class="note">
+        <strong>Smartsheet manda</strong>
+        Si hay diferencias, Smartsheet es la referencia. Las otras fuentes se ajustan a ella,
+        nunca al revés.
+      </div>
+    </section>
+
+    <!-- ───────────── 13. PASO 5 ───────────── -->
+    <section id="paso5">
+      <h2>13. Paso 5 · Excel maestro + Recepción M&amp;E (Dafne)</h2>
+      <figure>
+        <img src="img/15_paso5_zoom.png" alt="Paso 5 Excel y M&E">
+        <figcaption><b>Paso 5.</b> Genere el Excel maestro y reciba el archivo
+          <code>Tbl_Integrado.xlsx</code> de Dafne.</figcaption>
+      </figure>
+      <h3>13.1 Excel maestro (5a)</h3>
+      <p>Pulse <span class="btn-ref btn-ghost">Generar Excel Maestro</span> para exportar
+         C1 + C2 + C3 a un solo archivo <code>.xlsx</code>, con una hoja por componente.</p>
+      <h3>13.2 Recepción M&amp;E (5b)</h3>
+      <div class="step"><div class="num">1</div><div class="body"><h4>Validar</h4><p>Indique el trimestre y la ruta del archivo, y pulse <span class="btn-ref btn-ghost">Validar archivo</span>.</p></div></div>
+      <div class="step"><div class="num">2</div><div class="body"><h4>Colocar</h4><p><span class="btn-ref btn-ghost">Colocar en BasePath</span> deja el archivo donde Power BI lo espera.</p></div></div>
+      <div class="step"><div class="num">3</div><div class="body"><h4>Historial</h4><p>Revise el <em>Historial de recepción</em> por trimestre.</p></div></div>
+    </section>
+
+    <!-- ───────────── 14. PASO 6 ───────────── -->
+    <section id="paso6">
+      <h2>14. Paso 6 · Power BI</h2>
+      <figure>
+        <img src="img/16_paso6_zoom.png" alt="Paso 6 Power BI">
+        <figcaption><b>Paso 6.</b> Verifique y abra Power BI Desktop, genere scripts de
+          actualización y compare los valores de M&amp;E entre Dafne y Power BI.</figcaption>
+      </figure>
+      <ul>
+        <li><span class="btn-ref btn-ghost">Estado PBI Desktop</span> — comprueba si Power BI está abierto.</li>
+        <li><span class="btn-ref btn-ghost">Abrir PBI Desktop</span> — lanza el archivo del proyecto.</li>
+        <li><span class="btn-ref btn-ghost">Ejecutar Comparación</span> — compara indicador por indicador (Dafne vs Power BI), con detalle al hacer clic.</li>
+      </ul>
+      <div class="tip">
+        <strong>Decisiones</strong>
+        Tras revisar las diferencias, use <span class="btn-ref btn-green">Guardar Decisiones</span>
+        para dejar registrado el valor final acordado de cada indicador.
+      </div>
+    </section>
+
+    <!-- ───────────── 15. PASO 7 ───────────── -->
+    <section id="paso7">
+      <h2>15. Paso 7 · Reportes y respaldo</h2>
+      <figure>
+        <img src="img/17_paso7_zoom.png" alt="Paso 7 Reportes">
+        <figcaption><b>Paso 7.</b> Reporte de errores, resumen de datos, guía PDF para exportar
+          desde Power BI y verificación del enlace público (Publish-to-Web).</figcaption>
+      </figure>
+      <table class="tbl">
+        <tr><th>Acción</th><th>Para qué sirve</th></tr>
+        <tr><td><span class="btn-ref btn-ghost">Reporte Errores</span></td><td>Resume los problemas detectados en el pipeline.</td></tr>
+        <tr><td><span class="btn-ref btn-ghost">Resumen Datos</span></td><td>Resumen general del trabajo del trimestre.</td></tr>
+        <tr><td><span class="btn-ref btn-ghost">Exportar PDF</span></td><td>Guía para exportar el tablero de Power BI a PDF.</td></tr>
+        <tr><td><span class="btn-ref btn-ghost">Verificar Enlace PBI</span></td><td>Comprueba que el enlace público de Power BI funcione.</td></tr>
+      </table>
+    </section>
+
+    <!-- ───────────── 16. ORQUESTADOR ───────────── -->
+    <section id="orq">
+      <h2>16. Orquestador</h2>
+      <p>El Orquestador coordina todos los pasos y muestra el estado de cada uno. Es útil para
+         ver, de un vistazo, en qué punto va el trabajo del trimestre.</p>
+      <figure>
+        <img src="img/18_orquestador_zoom.png" alt="Orquestador">
+        <figcaption><b>Orquestador.</b> Use <span class="btn-ref btn-green">Iniciar Pipeline</span>
+          para arrancar la secuencia y <span class="btn-ref btn-ghost">Actualizar Estado</span>
+          para refrescar el progreso.</figcaption>
+      </figure>
+      <div class="note">
+        <strong>Pasos manuales</strong>
+        Los pasos que necesitan ArcGIS Pro (3 y 4) esperan su confirmación manual. El
+        Orquestador no los hace solo; le indica cuándo le toca a usted.
+      </div>
+    </section>
+
+    <!-- ───────────── 17. ASISTENTE ───────────── -->
+    <section id="asistente">
+      <h2>17. Modo Asistente paso a paso</h2>
+      <p>Si prefiere que el sistema le lleve de la mano, active <span class="btn-ref btn-ghost">Asistente</span>
+         en la barra superior. Verá una sola tarjeta a la vez, con el título del paso, una
+         explicación y los botones de acción.</p>
+      <figure>
+        <img src="img/30_wizard_full.png" alt="Modo asistente paso 1">
+        <figcaption><b>Asistente — Paso 1 de 7.</b> Cada tarjeta indica qué hacer. Las acciones
+          marcadas con <strong>*</strong> son obligatorias. Avance con
+          <span class="btn-ref btn-green">Siguiente →</span>.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/32_wizard_step2.png" alt="Modo asistente paso siguiente">
+        <figcaption><b>Asistente — siguiente paso.</b> La barra de progreso superior muestra en
+          qué paso va. Puede volver con <span class="btn-ref btn-ghost">← Paso anterior</span>.</figcaption>
+      </figure>
+      <div class="tip">
+        <strong>Consejo</strong>
+        Empiece siempre en modo Asistente las primeras veces. Cuando ya domine la secuencia,
+        cambie a Avanzado para ir más rápido.
+      </div>
+    </section>
+
+    <!-- ───────────── 18. REGLAS ───────────── -->
+    <section id="reglas">
+      <h2>18. Reglas importantes</h2>
+      <div class="warn">
+        <strong>1. El CÓDIGO DE LA ACTIVIDAD es inmutable</strong>
+        Una vez asignado, no se borra ni se modifica desde el sistema. Solo usted, a mano, en
+        Smartsheet.
+      </div>
+      <div class="warn">
+        <strong>2. Smartsheet es la verdad</strong>
+        Cuando algo no coincide entre fuentes, Smartsheet manda. GIS y AGOL se ajustan a ella.
+      </div>
+      <div class="note">
+        <strong>3. No cierre la ventana negra</strong>
+        Es el motor del tablero. Si la cierra, el tablero deja de funcionar.
+      </div>
+      <div class="note">
+        <strong>4. Trabaje en bucle hasta terminar la cola</strong>
+        Repita el ciclo (elegir pendiente → descargar → subir a ArcGIS Pro → insertar código →
+        marcar la casilla) hasta que no queden pendientes.
+      </div>
+    </section>
+
+    <!-- ───────────── 19. PROBLEMAS ───────────── -->
+    <section id="problemas">
+      <h2>19. Problemas frecuentes</h2>
+      <table class="tbl">
+        <tr><th>Síntoma</th><th>Qué revisar</th></tr>
+        <tr><td>El tablero no abre en el navegador</td><td>¿Está abierta la ventana negra (<code>run.bat</code>)? Use la dirección <code>http://localhost:5000</code>.</td></tr>
+        <tr><td>Token en rojo / “sin token”</td><td>Falta el token de Smartsheet. Contacte al administrador.</td></tr>
+        <tr><td>“No conectado a AGOL”</td><td>Pulse <span class="btn-ref btn-green">Conectar AGOL</span>. La sesión caduca a los 60 minutos.</td></tr>
+        <tr><td>El diagnóstico no avanza</td><td>Espere a que termine (aviso amarillo). No inicie descargas mientras tanto.</td></tr>
+        <tr><td>No encuentro una actividad</td><td>Use los filtros de la vista previa (Código, Trimestre, Sin código…).</td></tr>
+        <tr><td>Una fila no tiene shapefile</td><td>El sistema usa el Excel de áreas como alternativa (convierte a puntos).</td></tr>
+        <tr><td>Algo falló y no sé qué</td><td>Mire el <em>Log de Operaciones</em> abajo; puede descargarlo y enviarlo al administrador.</td></tr>
+      </table>
+      <div class="tip">
+        <strong>Botones de ayuda “?”</strong>
+        Muchos campos y botones tienen un icono <strong>?</strong>. Haga clic para ver una
+        explicación en español e inglés.
+      </div>
+    </section>
+
+    <footer>
+      <p><strong>Altiplano Resiliente — Actualizador de Mapa.</strong> Manual de operación para
+         persona operadora no técnica. Las imágenes son capturas reales del tablero.</p>
+      <p><strong>¿Instalación en un PC nuevo?</strong> Vea el archivo <code>LEEME.md</code>
+         de esta misma carpeta: explica cómo descargar el programa desde GitHub, instalarlo
+         (<code>setup.bat</code>) y ejecutarlo (<code>run.bat</code>).</p>
+      <p>Para guardar este manual como PDF: abra esta página en el navegador y use
+         <em>Imprimir → Guardar como PDF</em>.</p>
+    </footer>
+
+  </main>
+</div>
+</body>
+</html>
