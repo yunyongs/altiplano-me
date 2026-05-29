@@ -41,12 +41,12 @@ Antes de comenzar, asegurese de tener lo siguiente:
 1. Vaya al repositorio del proyecto en GitHub
 2. Haga clic en el boton verde **"Code"**
 3. Seleccione **"Download ZIP"**
-4. Descomprima el archivo en una carpeta de su eleccion (por ejemplo `C:\AR\altiplano`)
+4. Descomprima el archivo en una carpeta de su eleccion (por ejemplo `C:\AR\altiplano-me`)
 
 ### Opcion B — Clonar con Git (si tiene Git instalado)
 
 ```
-git clone https://github.com/yunyongs/altiplano.git
+git clone https://github.com/yunyongs/altiplano-me.git
 ```
 
 ---
@@ -229,7 +229,7 @@ para diagnosticar problemas (solo para desarrollo):
 ## Estructura de archivos importantes
 
 ```
-altiplano/
+altiplano-me/
 |
 |-- setup.bat          <-- Ejecutar UNA VEZ para instalar
 |-- run.bat            <-- Ejecutar CADA VEZ para iniciar la app

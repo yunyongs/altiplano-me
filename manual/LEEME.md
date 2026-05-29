@@ -51,16 +51,16 @@ instalar nada extra**.
 ### Opción 1 — Descargar el ZIP (recomendada, más fácil)
 
 1. Abra el navegador y vaya a la página del proyecto en GitHub:
-   **<https://github.com/yunyongs/altiplano>**
+   **<https://github.com/yunyongs/altiplano-me>**
 2. Pulse el botón verde **`< > Code`** (arriba a la derecha de la lista de archivos).
 3. En el menú que se abre, elija **“Download ZIP”**.
 4. Se descargará un archivo llamado, por ejemplo,
-   `altiplano-main.zip`, normalmente en la carpeta *Descargas*.
+   `altiplano-me-main.zip`, normalmente en la carpeta *Descargas*.
 5. Haga clic derecho sobre el ZIP → **“Extraer todo…”** → elija una carpeta
-   estable, por ejemplo `C:\altiplano`, y pulse *Extraer*.
+   estable, por ejemplo `C:\altiplano-me`, y pulse *Extraer*.
 
 > **Consejo:** evite carpetas con espacios raros o muy profundas. Una ruta corta
-> como `C:\altiplano` funciona mejor.
+> como `C:\altiplano-me` funciona mejor.
 
 ### Opción 2 — Con Git (si sabe usarlo)
 
@@ -69,15 +69,15 @@ Si tiene **Git** instalado (<https://git-scm.com/download/win>), abra la
 
 ```
 cd C:\
-git clone https://github.com/yunyongs/altiplano.git
+git clone https://github.com/yunyongs/altiplano-me.git
 ```
 
-Esto crea la carpeta `C:\altiplano` con el programa.
+Esto crea la carpeta `C:\altiplano-me` con el programa.
 
 ## Paso A3 — Instalar el sistema (setup.bat)
 
 1. Abra la carpeta donde extrajo/clonó el programa
-   (por ejemplo `C:\altiplano`).
+   (por ejemplo `C:\altiplano-me`).
 2. Haga **doble clic** en **`setup.bat`**.
 3. Se abrirá una ventana negra que hará todo automáticamente:
    - crea el entorno de Python e instala los paquetes necesarios;

@@ -1,21 +1,45 @@
-# Altiplano Resiliente — Map Updater
+# Altiplano Resiliente — Sistema de Monitoreo y Evaluación (M&E)
 
-> Panel de control web para la actualización trimestral de mapa, validación GIS,
-> publicación AGOL y seguimiento Power BI de Altiplano Resiliente.
-> Está orientado a una persona operadora no técnica que ejecuta el flujo desde el navegador.
+> Sistema de **Monitoreo y Evaluación (M&E)** del proyecto Altiplano Resiliente
+> (IUCN), construido como un **pipeline de datos y flujos de trabajo** que
+> integra recolección de campo, procesamiento geoespacial, publicación y
+> reporte de indicadores.
+> Está orientado a una persona operadora no técnica que ejecuta el flujo desde
+> el navegador mediante un panel de control Flask.
 
 ---
 
-## ¿Qué hace este proyecto?
+## ¿Qué es este proyecto?
 
-Automatiza el flujo de trabajo trimestral de actualización cartográfica del proyecto Altiplano Resiliente (IUCN/GEF), que conecta:
+Este repositorio implementa el **Sistema de Monitoreo y Evaluación (M&E)** del
+proyecto **Altiplano Resiliente (IUCN)**. Su propósito es sostener el ciclo
+trimestral de M&E del proyecto: tomar los datos reportados desde el campo,
+validarlos, convertirlos en información geoespacial e indicadores, y dejarlos
+disponibles para seguimiento y toma de decisiones.
+
+Conceptualmente, el sistema es un **pipeline de datos + flujo de trabajo (data
+pipeline & workflow)** que conecta cuatro plataformas:
 
 ```
 Smartsheet  ──▶  ArcGIS Pro  ──▶  ArcGIS Online  ──▶  Power BI Dashboard
-    (datos)        (SIG local)       (publicación)        (reporte web)
+   (datos          (proceso          (publicación        (indicadores
+    M&E de          geoespacial)      geoespacial)         M&E / reporte)
+    campo)
 ```
 
-El servidor Flask actúa como intermediario: lee datos de Smartsheet, genera scripts ArcPy listos para pegar en ArcGIS Pro, coordina el pipeline y mantiene un paquete documental para operación y capacitación.
+El **Map Updater** (actualización cartográfica trimestral) es **uno de los
+componentes** de este sistema M&E: el componente que procesa y publica la capa
+geoespacial. Alrededor de él, el sistema también cubre recolección y saneamiento
+de datos, recepción de M&E (Dafne), comparación de indicadores y reportes.
+
+El servidor Flask actúa como orquestador del pipeline: lee datos de Smartsheet,
+genera scripts ArcPy listos para pegar en ArcGIS Pro, coordina cada paso del
+flujo de M&E y mantiene un paquete documental para operación y capacitación.
+
+> **Nota de alcance.** El diseño del sistema M&E se irá ampliando con el tiempo.
+> Esta documentación describe el estado actual (centrado en el pipeline
+> geoespacial / Map Updater) y se actualizará a medida que se incorporen nuevos
+> módulos de monitoreo y evaluación.
 
 Además del pipeline principal, la operación actual usa un diagnóstico inicial que,
 en la documentación para usuario, debe entenderse como Paso 1-a.
@@ -95,8 +119,8 @@ El **Orquestador** (`orchestrator.py`) coordina los pasos, rastrea el estado de 
 ### Configurar
 
 ```bash
-git clone https://github.com/yunyongs/altiplano.git
-cd altiplano
+git clone https://github.com/yunyongs/altiplano-me.git
+cd altiplano-me
 
 # Opción recomendada en Windows
 setup.bat
@@ -157,7 +181,7 @@ Abrir en el navegador: **http://localhost:5000**
 ## Estructura del proyecto
 
 ```
-altiplano/
+altiplano-me/
 │
 ├── app.py                   # Servidor Flask — rutas y endpoints API (~78 endpoints)
 ├── ar_utils.py              # Utilidades compartidas: rutas, ZIP, AbE, shapefile, Excel, streaming

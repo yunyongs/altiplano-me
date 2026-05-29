@@ -28,3 +28,8 @@ documents/
 
 # Pencil design source (encrypted; not needed to run the app)
 *.pen
+
+# Editor / IDE / CI helper files (machine- or tooling-specific; not part of the product)
+.github/
+.vscode/
+*.code-workspace

@@ -42,18 +42,32 @@ Use the document set by role.
 
 ## System Purpose
 
-Altiplano Resiliente is a Flask-based dashboard used to run a quarterly map and
-reporting update process across:
+This repository implements the **Monitoring and Evaluation (M&E) system** for the
+**Altiplano Resiliente (IUCN)** project. It is structured as a **data pipeline and
+workflow** that runs the project's quarterly M&E cycle: collecting field-reported
+data, processing it into geospatial information and indicators, publishing it, and
+making it available for tracking and decision-making.
 
-- Smartsheet
-- ArcGIS Pro
-- ArcGIS Online
-- Power BI
+The system orchestrates work across:
+
+- Smartsheet (field M&E data)
+- ArcGIS Pro (geospatial processing)
+- ArcGIS Online (geospatial publication)
+- Power BI (M&E indicators / reporting)
 - local filesystem workflows
 
-The project is designed for a non-technical operator who can execute the
-pipeline from the browser while still relying on ArcGIS Pro for manual script
-execution in selected stages.
+The **Map Updater** — the quarterly cartographic update — is **one component** of
+this M&E system (the geospatial pipeline). Around it, the system also covers data
+collection and cleaning, M&E reception (Dafne), indicator comparison, and reporting.
+
+A Flask-based dashboard is the operator-facing surface of the system. It is designed
+for a non-technical operator who can execute the pipeline from the browser while
+still relying on ArcGIS Pro for manual script execution in selected stages.
+
+> **Scope note.** The M&E system design will continue to grow over time. This
+> document describes the current state (centered on the geospatial pipeline /
+> Map Updater) and will be updated as new monitoring and evaluation modules are
+> added.
 
 ---
 

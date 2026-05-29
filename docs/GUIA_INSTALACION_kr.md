@@ -41,12 +41,12 @@
 1. GitHub의 프로젝트 저장소로 이동
 2. 녹색 **"Code"** 버튼 클릭
 3. **"Download ZIP"** 선택
-4. 원하는 폴더에 압축 해제 (예: `C:\AR\altiplano`)
+4. 원하는 폴더에 압축 해제 (예: `C:\AR\altiplano-me`)
 
 ### 방법 B — Git으로 클론 (Git이 설치된 경우)
 
 ```
-git clone https://github.com/yunyongs/altiplano.git
+git clone https://github.com/yunyongs/altiplano-me.git
 ```
 
 ---
@@ -203,7 +203,7 @@ git clone https://github.com/yunyongs/altiplano.git
 ## 주요 파일 구조
 
 ```
-altiplano/
+altiplano-me/
 |
 |-- setup.bat          <-- 한 번만 실행 (설치용)
 |-- run.bat            <-- 매번 실행 (앱 시작용)
