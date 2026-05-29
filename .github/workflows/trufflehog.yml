@@ -1,0 +1,26 @@
+name: TruffleHog Verified Secrets
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trufflehog:
+    name: Verified secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run TruffleHog (verified only)
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified --fail

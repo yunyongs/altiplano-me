@@ -1,0 +1,21 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Altiplano Resiliente (public) — false-positive exclusions"
+
+paths = [
+  '''\.env\.template$''',
+  '''\.env\.example$''',
+  '''config\.template\.js$''',
+  '''tests/fixtures/.*''',
+  '''docs/.*\.md$''',
+  '''manual/.*\.md$''',
+  '''.*\.ipynb$''',
+]
+
+regexes = [
+  '''AIzaSy[A-Za-z0-9_-]{33}EXAMPLE''',
+  '''xoxb-EXAMPLE''',
+  '''sk-EXAMPLE''',
+]
