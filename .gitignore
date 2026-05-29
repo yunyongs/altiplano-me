@@ -25,6 +25,7 @@ documents/
 03_PowerBI_Dashboard/**/unappliedChanges.json
 # Local Claude Code settings (machine-specific paths, env ids — never share)
 .claude/
+CLAUDE.md
 
 # Pencil design source (encrypted; not needed to run the app)
 *.pen
