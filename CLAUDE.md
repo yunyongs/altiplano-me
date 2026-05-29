@@ -16,7 +16,36 @@ All implementation work (create/edit/delete) must be limited to Flask server fil
 - `templates/`, `static/`
 - `tests/`
 - New Python modules as needed for the Flask app
-- Repository-level documentation updates are also allowed when they support the Flask dashboard workflow, including `README.md`, `Architecture.md`, `.github/copilot-instructions.md`, and this `CLAUDE.md`.
+- Repository-level documentation updates are also allowed when they support the Flask dashboard workflow, including `README.md`, `Architecture.md`, and this `CLAUDE.md`.
+- Do not modify `03_PowerBI_Dashboard/` unless the task explicitly targets Power BI assets.
+
+## Project context
+This repository is the **Monitoring & Evaluation (M&E) system** for the Altiplano Resiliente (IUCN) project — a data pipeline and workflow across Smartsheet → ArcGIS Pro → ArcGIS Online → Power BI. The Map Updater (quarterly cartographic update) is one component (the geospatial pipeline). A Flask dashboard is the operator-facing surface, designed for a non-technical operator who runs the pipeline from the browser. The pipeline runs Paso 1–7; backend endpoints named `paso0` implement the AGOL-vs-Smartsheet diagnosis, surfaced to operators as **Paso 1-a**.
+
+Keep reusable logic in small, testable Python modules or `ar_utils.py`; prefer testable functions over route-level inline logic. Use `Architecture.md` for top-level architecture, `docs/FEATURES.md` for module/endpoint context, and `docs/WORKFLOW_STEPS.md` for the expected user flow.
+
+## Build and test
+- Use the local virtual environment before running Python commands. Windows helpers are `setup.bat` (install, run once) and `run.bat` (start the app).
+- Manual setup: `python -m venv .venv` then `.venv\Scripts\activate` then `pip install -r requirements.txt`.
+- Run the app: `flask --app app run --host 127.0.0.1 --port 5000` or `python app.py`.
+- Run all tests: `pytest tests/`. Single file: `pytest tests/test_ar_utils.py -v`. Single test: `pytest tests/test_ar_utils.py::test_safe_resolve_valid -v`.
+- Many runtime flows depend on `.env`, Smartsheet access, local folders, and ArcGIS Pro. Prefer unit tests and isolated Flask-side validation unless the task requires integration behavior.
+- On Windows with OneDrive or strict ACLs, `tmp_path` cleanup can fail. The autouse `conftest.py` fixture `_fix_windows_tmp_cleanup` handles this — do not replicate it in individual tests.
+
+## Security guidelines (Audit 2026-04-06)
+- **Path validation**: All user-provided filesystem paths must pass through `safe_resolve()` from `ar_utils.py` before any filesystem operation. Never use `os.path.join()` or `pathlib.Path()` with user input without validation.
+- **ZIP extraction**: Never use `zipfile.ZipFile.extractall()` without first validating all member paths. Use the safe extraction pattern in `ar_utils.py`.
+- **SSRF prevention**: Server-side HTTP requests must validate URLs against allowed domain whitelists. The Power BI publish-check only accepts `*.powerbi.com` HTTPS URLs; AGOL URLs go through `_safe_agol_url()`.
+- **Debug mode**: Never hardcode `debug=True`. Use `os.getenv("FLASK_DEBUG", "0") == "1"`.
+- **XSS prevention**: In `static/app.js`, always use `escapeHtml()` when inserting server data via `innerHTML`. Prefer `textContent` or DOM construction where possible. Never construct inline `onclick` attributes with dynamic content.
+- **Design tokens**: Never use inline hex colors in JavaScript. Use CSS utility classes (`.text-error`, `.text-warning`, `.text-success`, `.bg-error`, etc.) defined in `static/style.css`.
+- Reference: `documents/plan-audit-remediation.md` for the full remediation plan.
+
+## Key patterns
+- **Error responses**: All backend errors must use `friendly_error(error_code, **kwargs)` from `app.py`. It returns a structured dict with `error_code`, `title`, `message`, and `action` in Spanish (user language). Add new error codes to the `ERROR_MESSAGES` catalog in `app.py`; document them in `documents/03_S3_ERROR_MESSAGES.md`.
+- **Protected endpoints**: Sensitive routes (filesystem paths, ArcGIS Pro control, Power BI launch) are listed in `_PROTECTED_PREFIXES` and require an `X-Local-Token` header matching the session token (`_LOCAL_TOKEN`) generated at startup. When adding new sensitive routes, add them to that tuple.
+- **C2 multi-shapefile handling**: Component C2 can have multiple SHP ZIPs per summary row; they coexist in one `-Shapes` folder. `_cdg_mapping.json` stores the full child-row list. AbE narrowing happens inside ArcPy, not by writing separate mapping files per attachment. See `docs/LOGICA_MULTI_SHP_C2.md`.
+- **Smartsheet response cache**: `app.py` caches Smartsheet API responses in `_SS_CACHE` (keyed by component + sheet_id, TTL 300 s). When adding new Smartsheet reads, use or update this cache rather than making unconditional API calls.
 
 ## 문서 생성에는 다음 규칙을 적용한다.
 - docs/ 폴더 아래는 파일명과 내용 모두 스페인어로 작성한다. 프로그래머의 요구가 있을 시 복사본을 documents/폴더 아래 파일은 내용은 한국어로 작성하고 '_kr' suffix를 단다.
